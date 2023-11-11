@@ -1,0 +1,41 @@
+### mysql 批量查询
+POST http://127.0.0.1:5000/mysql_qry
+Content-Type: application/json; charset=utf-8
+Accept: application/json, text/plain, */*
+
+{
+  "str_sql_array": [
+    "SELECT * FROM sys_user where user_id=1",
+    "SELECT * FROM sys_user where user_id=2"
+  ],
+  "str_node_env": "prd"
+}
+
+### mysql 批量事务
+POST http://127.0.0.1:5000/mysql_trans
+Content-Type: application/json; charset=utf-8
+Accept: application/json, text/plain, */*
+
+{
+"str_sql_array": [
+"UPDATE sys_user SET user_name='郭睿01' where user_id=1",
+"UPDATE sys_user SET user_name='郭睿02' where user_id=1"
+],
+"str_node_env": "prd"
+}
+
+### 通过提交用户名&密码获取 JWT Token
+GET http://127.0.0.1:5000/get_jwt_token
+Content-Type: application/json; charset=utf-8
+Accept: application/json, text/plain, */*
+
+{
+  "client_id": "07733",
+  "client_pwd": "123581321"
+}
+
+### 使用 JWT Token 访问被保护的资源
+GET http://127.0.0.1:5000/get_protected_content
+Content-Type: application/json; charset=utf-8
+Accept: application/json, text/plain, */*
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUxODgzMzk5fQ.WceztmYV4vNJA31riwioZ9AlxSCzvXiJvT2qjvGM3Zg
