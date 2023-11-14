@@ -91,7 +91,7 @@ pub struct Claims {
 /// 实现 Display trait 可以保证此结构体可以直接打印输出
 impl Display for Claims {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let exp = Local.timestamp_opt(self.exp, 0)?;
+        let exp = Local.timestamp_opt(self.exp, 0).single().ok_or(std::fmt::Error)?;
         write!(
             f,
             "ClientId: {}\nClientPassword: {}\nExpireDateTime: {}",
