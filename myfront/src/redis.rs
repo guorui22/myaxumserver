@@ -4,8 +4,6 @@ use anyhow::{anyhow, Error};
 use deadpool_redis::{Config, Connection, Pool, Runtime};
 use tracing::error;
 
-use crate::error::SfAllError;
-
 /// 自定义数据库连接池类型
 #[derive(Clone)]
 pub struct Redis01Pool(pub Pool);
@@ -31,7 +29,7 @@ pub async fn init_redis_conn_pool(
     let pool = Config::from_url(format!("redis://{host}:{port}"))
         .create_pool(Some(Runtime::Tokio1))
         .map_or_else(
-            |err| Err(SfAllError::DatabasePoolInitError(anyhow!(format!("Redis 数据库连接池({}) is {}", db_name, err)))),
+            |err| Err(anyhow!(format!("Redis 数据库连接池({}) is {}", db_name, err))),
             Ok)?;
     Ok(pool)
 }

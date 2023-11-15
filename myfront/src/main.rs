@@ -79,7 +79,7 @@ async fn main() -> Result<(), anyhow::Error> {
     // 获取配置文件中的 MYSQL_01 配置信息
     let ini_mysql_01 = ini
         .get("MYSQL_01")
-        .ok_or(anyhow!("MYSQL_01 section not found"))?;
+        .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
     let mysql_01_pool: DatabaseConnection = init_mysql_conn_pool("MYSQL_01", ini_mysql_01).await?;
 
@@ -151,10 +151,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let default_port = &String::from("5000");
     let host = ini_main.get("MN_SERVER_HOST").unwrap_or(default_host);
     let port = ini_main.get("MN_SERVER_PORT").unwrap_or(default_port);
-    axum::Server::bind(&format!("{host}:{port}").parse().unwrap())
+    axum::Server::bind(&format!("{host}:{port}").parse()?)
         // 挂载路由 router 到应用监听端口
         .serve(router.into_make_service())
-        .await
-        .unwrap();
+        .await?;
     Ok(())
 }

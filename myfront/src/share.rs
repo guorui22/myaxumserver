@@ -7,8 +7,6 @@ use config::Config;
 use serde::Deserialize;
 use tracing::info;
 
-use crate::error::SfAllError;
-
 /// 读取服务器配置文件参数信息
 pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, anyhow::Error> {
     // 获取配置文件路径
@@ -39,7 +37,7 @@ pub fn watch_ctrl_c_to_exit() {
     .unwrap_or_else(|err| {
         panic!(
             "{}",
-            SfAllError::CtrlcError(anyhow!(err)).to_string()
+            err.to_string()
         )
     });
 }

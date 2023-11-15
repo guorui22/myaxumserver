@@ -1,6 +1,5 @@
 use std::path::Path;
 
-use anyhow::anyhow;
 use askama::Template;
 use axum::{Extension, Form, Json};
 use axum::extract::{Multipart, Query};
@@ -12,10 +11,8 @@ use sea_orm::{ConnectionTrait, DatabaseBackend, FromQueryResult, TransactionTrai
 use serde_json::json;
 #[allow(unused_imports)]
 use tracing::{event, info, instrument, Level, trace};
-use tracing::debug;
 use uuid::Uuid;
 
-use crate::error::axum_http_handle_err_process;
 use crate::jwt::{AuthInfo, authorize, Claims};
 use crate::mysql::MySQL01Pool;
 use crate::redis::{get_redis_connection, Redis01Pool};
@@ -36,14 +33,14 @@ pub async fn mysql_query(
     headers: HeaderMap,
     Extension(mysql_01_pool): Extension<MySQL01Pool>,
     Json(args): Json<DbBatchQueryArgs>,
-) -> Result<Json<serde_json::Value>, Json<serde_json::Value>> {
+) -> Result<Json<serde_json::Value>, String> {
     let request_id = get_request_id(&headers);
     info!("x-request-id={}", request_id);
 
     let sql_vec = args.str_sql_array;
     let conn = match args.str_node_env.as_str() {
         "prd" => mysql_01_pool.clone(),
-        _ => Err(anyhow!("未知的数据库连接池名称")).map_err(axum_http_handle_err_process)?,
+        evn_name => Err(format!("未知的运行环境名称: {}", evn_name))?,
     };
 
     let mut rst_vec = vec![];
@@ -51,7 +48,7 @@ pub async fn mysql_query(
         let vec_colum_values = conn
             .query_all(sea_orm::Statement::from_string(DatabaseBackend::MySql, sql))
             .await
-            .map_err(axum_http_handle_err_process)?
+            .map_err(|err|format!("数据库查询失败: {}", err))?
             .into_iter()
             .map(|ref q1| sea_orm::query::JsonValue::from_query_result(q1, ""))
             .map(|j1| {
@@ -77,25 +74,25 @@ pub async fn mysql_transaction(
     headers: HeaderMap,
     Extension(mysql_01_pool): Extension<MySQL01Pool>,
     Json(args): Json<DbBatchQueryArgs>,
-) -> Result<Json<serde_json::Value>, Json<serde_json::Value>> {
+) -> Result<Json<serde_json::Value>, String> {
     let request_id = get_request_id(&headers);
     info!("x-request-id={}", request_id);
 
     let sql_vec = args.str_sql_array;
     let conn = match args.str_node_env.as_str() {
         "prd" => mysql_01_pool,
-        _ => Err(anyhow!("未知的数据库连接池名称")).map_err(axum_http_handle_err_process)?,
+        evn_name => Err(format!("未知的运行环境名称: {}", evn_name))?,
     };
 
     // 开启事务
-    let db_transaction = conn.begin().await.map_err(axum_http_handle_err_process)?;
+    let db_transaction = conn.begin().await.map_err(|err|format!("开启数据库事务失败: {}", err))?;
 
     let mut rst_vec = vec![];
     for sql in sql_vec.into_iter() {
         let exec_rst = db_transaction
             .execute(sea_orm::Statement::from_string(DatabaseBackend::MySql, sql))
             .await
-            .map_err(axum_http_handle_err_process)?;
+            .map_err(|err|format!("数据库SQL执行失败: {}", err))?;
         rst_vec.push(json!({ "rows_affected":exec_rst.rows_affected(), "last_insert_id": exec_rst.last_insert_id()}));
     }
 
@@ -103,7 +100,7 @@ pub async fn mysql_transaction(
     db_transaction
         .commit()
         .await
-        .map_err(axum_http_handle_err_process)?;
+        .map_err(|err|format!("数据库事务提交失败: {}", err))?;
 
     Ok(Json(json!({
         "status": 0,
@@ -113,8 +110,8 @@ pub async fn mysql_transaction(
 
 /// 使用用户名&密码获取 JWT Token
 #[debug_handler]
-pub async fn get_jwt_token(Json(auth_info): Json<AuthInfo>) -> Result<Json<serde_json::Value>, Json<serde_json::Value>> {
-    let auth_token = authorize(auth_info).map_err(axum_http_handle_err_process)?;
+pub async fn get_jwt_token(Json(auth_info): Json<AuthInfo>) -> Result<Json<serde_json::Value>, String> {
+    let auth_token = authorize(auth_info).map_err(|err|format!("用户Token验证失败: {}", err))?;
     Ok(Json(json!({
         "status": 0,
         "result": auth_token,
@@ -126,7 +123,7 @@ pub async fn get_jwt_token(Json(auth_info): Json<AuthInfo>) -> Result<Json<serde
 pub async fn get_protected_content(
     claims: Claims,
     headers: HeaderMap,
-) -> Result<Json<serde_json::Value>, Json<serde_json::Value>> {
+) -> Result<Json<serde_json::Value>, String> {
     let request_id = get_request_id(&headers);
     info!("x-request-id={}", request_id);
     info!("claims={:?}", claims);
@@ -168,8 +165,7 @@ pub async fn user_login(Query(login_msg): Query<LoginMessage>) -> Result<Html<St
     };
     let login_template = LoginTemplate { msg };
     let html = login_template.render().map_err(|err| {
-        let err = format!("login 模板渲染失败：{}", err);
-        err
+        format!("login 模板渲染失败：{}", err)
     })?;
     Ok(Html(html))
 }
@@ -198,9 +194,7 @@ pub async fn login_action(
             // 将 session 保存到 redis
             let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
             let mut conn = pool.get().await.map_err(|err| {
-                let str_err = format!("Redis 获取连接失败：{}", err);
-                debug!("{str_err}");
-                str_err
+                format!("Redis 获取连接失败：{}", err)
             })?;
             // session 将在20分钟后自动过期
             cmd("SETEX")
@@ -209,7 +203,7 @@ pub async fn login_action(
                 .arg(user_session)
                 .query_async::<_, ()>(&mut conn)
                 .await
-                .map_err(|err| err.to_string())?;
+                .map_err(|err| format!("Redis 设置失效时间失败：{}", err))?;
             "/main"
         };
     headers.insert(axum::http::header::LOCATION, url.parse().unwrap());
@@ -281,7 +275,9 @@ pub async fn upload_file_action(
     while let Some(file) = multipart.next_field().await.map_err(|err|err.to_string())? {
         let filename = format!("{}-{}", Uuid::new_v4().as_simple(), file.file_name().ok_or("获取文件名称出错。")?); // 上传的文件名
         let upload_path = Path::new(&upload_path).join(&filename); //
-        let data = file.bytes().await.map_err(|_| "获取文件内容出错。")?; // 上传的文件的内容
+        let data = file.bytes().await.map_err(|err| {
+            format!("获取上传文件内容失败：{}", err)
+        })?; // 上传的文件的内容
 
         if data.is_empty() {
             continue;
@@ -290,7 +286,9 @@ pub async fn upload_file_action(
         // 保存上传的文件
         tokio::fs::write(upload_path.clone(), &data)
             .await
-            .map_err(|err| err.to_string())?;
+            .map_err(|err| {
+                format!("保存上传文件到磁盘失败：{}", err)
+            })?;
 
         rst.push(format!(
             "【上传的文件】文件名：{:?}, 文件大小：{}",

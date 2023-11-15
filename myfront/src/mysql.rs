@@ -4,8 +4,6 @@ use std::time::Duration;
 use anyhow::{anyhow, Error};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-use crate::error::SfAllError;
-
 /// 自定义数据库连接池类型
 #[derive(Clone, Debug)]
 pub struct MySQL01Pool(pub DatabaseConnection);
@@ -41,8 +39,7 @@ pub async fn init_mysql_conn_pool(
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(true);
     let pool: DatabaseConnection = Database::connect(connect_opt).await.map_err(|err| {
-        let str_err = format!("MySQL 数据库连接池({}) is {}", db_name, err);
-        SfAllError::DatabasePoolInitError(anyhow!(str_err))
+        anyhow!("MySQL 数据库连接池({}) is {}", db_name, err)
     })?;
 
     Ok(pool)
