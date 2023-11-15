@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use anyhow::{anyhow, Error};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 /// 自定义数据库连接池类型
@@ -21,7 +20,7 @@ impl std::ops::Deref for MySQL01Pool {
 pub async fn init_mysql_conn_pool(
     db_name: &str,
     param_map: &HashMap<String, String>,
-) -> Result<DatabaseConnection, Error> {
+) -> Result<DatabaseConnection, String> {
     let default = &String::default();
     let mut connect_opt = ConnectOptions::new(format!(
         "mysql://{}:{}@{}:{}/{}",
@@ -39,7 +38,7 @@ pub async fn init_mysql_conn_pool(
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(true);
     let pool: DatabaseConnection = Database::connect(connect_opt).await.map_err(|err| {
-        anyhow!("MySQL 数据库连接池({}) is {}", db_name, err)
+        format!("MySQL 数据库连接池({}) is {}", db_name, err)
     })?;
 
     Ok(pool)

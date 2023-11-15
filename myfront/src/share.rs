@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use anyhow::anyhow;
 use axum::BoxError;
 use axum::http::{HeaderMap, Method, StatusCode, Uri};
 use config::Config;
@@ -8,10 +7,10 @@ use serde::Deserialize;
 use tracing::info;
 
 /// 读取服务器配置文件参数信息
-pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, anyhow::Error> {
+pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, String> {
     // 获取配置文件路径
     let root_path =
-        std::env::current_dir().map_err(|err| anyhow!(err))?;
+        std::env::current_dir().map_err(|err| format!("{}", err))?;
 
     #[cfg(not(windows))]
         let path_to_ini = root_path.join("conf").join("conf.toml");
@@ -22,9 +21,9 @@ pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, 
     Config::builder()
         .add_source(config::File::from(path_to_ini))
         .build()
-        .map_err(|err| anyhow!(err))?
+        .map_err(|err| format!("{}", err))?
         .try_deserialize::<HashMap<String, HashMap<String, String>>>()
-        .map_err(|err| anyhow!(err))
+        .map_err(|err| format!("{}", err))
 }
 
 

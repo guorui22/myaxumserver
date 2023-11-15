@@ -286,9 +286,10 @@ pub async fn upload_file_action(
         // 保存上传的文件
         tokio::fs::write(upload_path.clone(), &data)
             .await
-            .map_err(|err| {
-                format!("保存上传文件到磁盘失败：{}", err)
-            })?;
+            .map_err(|err|format!("保存上传文件到磁盘失败：{}", err))?;
+            // .map_err(|err| {
+            //     format!("保存上传文件到磁盘失败：{}", err)
+            // })?;
 
         rst.push(format!(
             "【上传的文件】文件名：{:?}, 文件大小：{}",

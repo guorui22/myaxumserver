@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use anyhow::anyhow;
 use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
@@ -32,21 +31,21 @@ use myfront::redis::{init_redis_conn_pool, Redis01Pool};
 use myfront::share::{init_server_config, UploadPath, watch_ctrl_c_to_exit};
 
 #[tokio::main]
-async fn main() -> Result<(), anyhow::Error> {
+async fn main() -> Result<(), String> {
     // 监听 ctrl+c 信号退出应用
     watch_ctrl_c_to_exit();
 
     // 服务器参数初始化
     let ini = init_server_config()?;
-    let ini_main: &HashMap<String, String> = ini.get("MAIN").ok_or(anyhow!("MAIN section not found"))?;
+    let ini_main: &HashMap<String, String> = ini.get("MAIN").ok_or("MAIN section not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_path = ini_main
         .get("MN_LOG_PATH")
-        .ok_or(anyhow!("MN_LOG_PATH not found"))?;
+        .ok_or(format!("MN_LOG_PATH not found"))?;
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_name = ini_main
         .get("MN_LOG_NAME")
-        .ok_or(anyhow!("MN_LOG_NAME not found"))?;
+        .ok_or(format!("MN_LOG_NAME not found"))?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
@@ -79,14 +78,14 @@ async fn main() -> Result<(), anyhow::Error> {
     // 获取配置文件中的 MYSQL_01 配置信息
     let ini_mysql_01 = ini
         .get("MYSQL_01")
-        .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
+        .ok_or(format!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
     let mysql_01_pool: DatabaseConnection = init_mysql_conn_pool("MYSQL_01", ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
         .get("REDIS_01")
-        .ok_or(anyhow!("REDIS_01 section not found"))?;
+        .ok_or("REDIS_01 section not found".to_string())?;
     // 初始化 REDIS_01 数据库连接池
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
 
@@ -131,7 +130,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))// 限制请求体大小为 100MB
                 .layer(Extension(MySQL01Pool(mysql_01_pool))) // 共享MySQL连接池
                 .layer(Extension(Redis01Pool(redis_01_pool))) // 共享Redis连接池
-                .layer(Extension(UploadPath{upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or(anyhow!("获取文件上传路径出错。"))?.to_string()})) // 共享文件上传路径
+                .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() })) // 共享文件上传路径
                 .layer(CompressionLayer::new()) // 启用压缩
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
                 .layer(SetRequestIdLayer::new(
@@ -151,9 +150,14 @@ async fn main() -> Result<(), anyhow::Error> {
     let default_port = &String::from("5000");
     let host = ini_main.get("MN_SERVER_HOST").unwrap_or(default_host);
     let port = ini_main.get("MN_SERVER_PORT").unwrap_or(default_port);
-    axum::Server::bind(&format!("{host}:{port}").parse()?)
+    axum::Server::bind(&format!("{host}:{port}").parse().map_err(|err| {
+            format!("服务地址与端口初始化错误：{:?}", err)
+        })?)
         // 挂载路由 router 到应用监听端口
         .serve(router.into_make_service())
-        .await?;
+        .await
+        .map_err(|err| {
+            format!("服务启动失败：{:?}", err)
+        })?;
     Ok(())
 }
