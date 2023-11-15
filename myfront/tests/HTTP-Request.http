@@ -39,3 +39,18 @@ GET http://127.0.0.1:5000/get_protected_content
 Content-Type: application/json; charset=utf-8
 Accept: application/json, text/plain, */*
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUxODgzMzk5fQ.WceztmYV4vNJA31riwioZ9AlxSCzvXiJvT2qjvGM3Zg
+
+
+
+### OSS回调小程序后台服务
+POST https://nailart.hanxiumeizhuang.com/index.php?s=/api/Notify/aliyun
+Content-Type: application/x-www-form-urlencoded
+Accept: application/json, text/plain, */*
+
+filename='20231115165304eGyzYNk25E.png' &
+size=26922 &
+mimeType='image/png' &
+height=10 &
+width=10 &
+my_var={"wxapp_id":10001,"group_id":0}
+
