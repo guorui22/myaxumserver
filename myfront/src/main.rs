@@ -20,7 +20,7 @@ use tracing::Level;
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
 #[cfg(not(debug_assertions))]
-use mychrono::my_tracing::get_my_file_writer;
+use myfront::my_tracing::get_my_file_writer;
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login, user_main};
 use myfront::my_request_id::MyMakeRequestId;
 use myfront::my_tracing::get_my_format;
@@ -35,19 +35,19 @@ async fn main() -> Result<(), String> {
     // 监听 ctrl+c 信号退出应用
     watch_ctrl_c_to_exit();
 
-    // 服务器参数初始化
+    // 读取服务器初始化参数
     let ini = init_server_config()?;
     let ini_main: &HashMap<String, String> = ini.get("MAIN").ok_or("MAIN section not found".to_string())?;
+
+    // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_path = ini_main
         .get("MN_LOG_PATH")
-        .ok_or(format!("MN_LOG_PATH not found"))?;
+        .ok_or("MN_LOG_PATH not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_name = ini_main
         .get("MN_LOG_NAME")
-        .ok_or(format!("MN_LOG_NAME not found"))?;
-
-    // release模式下，日志输出到文件
+        .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
         get_my_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
