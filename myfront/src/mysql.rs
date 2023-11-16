@@ -12,7 +12,17 @@ pub struct MySQL01;
 #[derive(Clone, Debug)]
 pub struct MySQLPool<T> {
     pub db_conn: DatabaseConnection,
-    pub _phantom: PhantomData<T>
+    _phantom: PhantomData<T>
+}
+
+/// 为结构体 MySQLPool<T>实现 new 方法
+impl<T> MySQLPool<T> {
+    pub fn new(db_conn: DatabaseConnection) -> Self {
+        Self {
+            db_conn,
+            _phantom: PhantomData::<T>
+        }
+    }
 }
 
 /// 为了实现 `Deref` trait，我们需要手动实现 `MySQL01DatabaseConnection` 的 `Deref` trait
