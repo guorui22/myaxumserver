@@ -95,12 +95,12 @@ pub async fn logout_action(
 /// Session场景-用户首页界面
 #[debug_handler]
 pub async fn user_main(
-    Extension(pool): Extension<RedisPool<Redis01>>,
+    Extension(_pool): Extension<RedisPool<Redis01>>,
     headers: HeaderMap,
 ) -> Result<Html<String>, String> {
     let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
     let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
-    let mut conn = pool.get().await.map_err(|err| {
+    let mut conn = _pool.get().await.map_err(|err| {
         format!("Redis 获取连接失败：{}", err)
     })?;
     let session_str: String = cmd("GET")
