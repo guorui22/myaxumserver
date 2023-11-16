@@ -19,7 +19,7 @@ pub async fn mysql_query(
 
     let sql_vec = args.str_sql_array;
     let conn = match args.str_node_env.as_str() {
-        "prd" => mysql_01_pool.clone(),
+        "prd" => mysql_01_pool,
         evn_name => Err(format!("未知的运行环境名称: {}", evn_name))?,
     };
 
