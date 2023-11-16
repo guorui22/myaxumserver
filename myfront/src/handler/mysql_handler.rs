@@ -4,14 +4,14 @@ use axum_macros::debug_handler;
 use sea_orm::{ConnectionTrait, DatabaseBackend, FromQueryResult, TransactionTrait};
 use serde_json::json;
 use tracing::info;
-use crate::mysql::MySQL01Pool;
+use crate::mysql::{MySQL01, MySQLPool};
 use crate::share::{DbBatchQueryArgs, get_request_id};
 
 /// mysql 批量查询
 #[debug_handler]
 pub async fn mysql_query(
     headers: HeaderMap,
-    Extension(mysql_01_pool): Extension<MySQL01Pool>,
+    Extension(mysql_01_pool): Extension<MySQLPool<MySQL01>>,
     Json(args): Json<DbBatchQueryArgs>,
 ) -> Result<Json<serde_json::Value>, String> {
     let request_id = get_request_id(&headers);
@@ -52,7 +52,7 @@ pub async fn mysql_query(
 #[debug_handler]
 pub async fn mysql_transaction(
     headers: HeaderMap,
-    Extension(mysql_01_pool): Extension<MySQL01Pool>,
+    Extension(mysql_01_pool): Extension<MySQLPool<MySQL01>>,
     Json(args): Json<DbBatchQueryArgs>,
 ) -> Result<Json<serde_json::Value>, String> {
     let request_id = get_request_id(&headers);

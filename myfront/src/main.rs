@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::marker::PhantomData;
 
 use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
@@ -26,7 +27,7 @@ use myfront::my_request_id::MyMakeRequestId;
 use myfront::my_tracing::get_my_format;
 #[cfg(debug_assertions)]
 use myfront::my_tracing::get_my_stdout_writer;
-use myfront::mysql::{init_mysql_conn_pool, MySQL01Pool};
+use myfront::mysql::{init_mysql_conn_pool, MySQL01, MySQLPool};
 use myfront::redis::{init_redis_conn_pool, Redis01Pool};
 use myfront::share::{init_server_config, UploadPath, watch_ctrl_c_to_exit};
 
@@ -128,7 +129,7 @@ async fn main() -> Result<(), String> {
             ServiceBuilder::new()
                 .layer(DefaultBodyLimit::disable()) // 禁用请求体大小默认2MB的限制
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))// 限制请求体大小为 100MB
-                .layer(Extension(MySQL01Pool(mysql_01_pool))) // 共享MySQL连接池
+                .layer(Extension(MySQLPool::<MySQL01>{db_conn: mysql_01_pool, _phantom: PhantomData})) // 共享MySQL连接池
                 .layer(Extension(Redis01Pool(redis_01_pool))) // 共享Redis连接池
                 .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() })) // 共享文件上传路径
                 .layer(CompressionLayer::new()) // 启用压缩

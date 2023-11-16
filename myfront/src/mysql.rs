@@ -1,18 +1,26 @@
 use std::collections::HashMap;
+use std::marker::PhantomData;
 use std::time::Duration;
 
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-/// 自定义数据库连接池类型
+/// 自定义数据库连接池类型 MySQL01
 #[derive(Clone, Debug)]
-pub struct MySQL01Pool(pub DatabaseConnection);
+pub struct MySQL01;
+
+/// 自定义数据库连接池
+#[derive(Clone, Debug)]
+pub struct MySQLPool<T> {
+    pub db_conn: DatabaseConnection,
+    pub _phantom: PhantomData<T>
+}
 
 /// 为了实现 `Deref` trait，我们需要手动实现 `MySQL01DatabaseConnection` 的 `Deref` trait
-impl std::ops::Deref for MySQL01Pool {
+impl<T> std::ops::Deref for MySQLPool<T> {
     type Target = DatabaseConnection;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.db_conn
     }
 }
 
