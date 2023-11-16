@@ -4,7 +4,7 @@ use axum_macros::debug_handler;
 use sea_orm::{ConnectionTrait, DatabaseBackend, FromQueryResult, TransactionTrait};
 use serde_json::json;
 use tracing::info;
-use crate::mysql::{MySQL01, MySQLPool};
+use crate::database::{MySQL01, MySQLPool};
 use crate::share::{DbBatchQueryArgs, get_request_id};
 
 /// mysql 批量查询

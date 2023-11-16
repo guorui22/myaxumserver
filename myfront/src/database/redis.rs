@@ -1,18 +1,36 @@
 use std::collections::HashMap;
+use std::marker::PhantomData;
 
 use deadpool_redis::{Config, Connection, Pool, Runtime};
 use tracing::error;
 
-/// 自定义数据库连接池类型
+/// 自定义数据库连接池类型 Redis01
+#[derive(Clone, Debug)]
+pub struct Redis01;
+
+/// 自定义数据库连接池
 #[derive(Clone)]
-pub struct Redis01Pool(pub Pool);
+pub struct RedisPool<T> {
+    pub redis_pool: Pool,
+    _db_type: PhantomData<T>
+}
+
+/// 为结构体 RedisPool<T>实现 new 方法
+impl<T> RedisPool<T> {
+    pub fn new(redis_pool: Pool) -> Self {
+        Self {
+            redis_pool,
+            _db_type: PhantomData::<T>
+        }
+    }
+}
 
 /// 为了实现 `Deref` trait，我们需要手动实现 `Redis01Pool` 的 `Deref` trait
-impl std::ops::Deref for Redis01Pool {
+impl<T> std::ops::Deref for RedisPool<T> {
     type Target = Pool;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.redis_pool
     }
 }
 

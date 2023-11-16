@@ -1,13 +1,14 @@
 use askama::Template;
-use axum::extract::Query;
 use axum::{Extension, Form};
+use axum::extract::Query;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::Html;
 use axum_macros::debug_handler;
 use deadpool_redis::redis::cmd;
 use serde_json::json;
 use uuid::Uuid;
-use crate::redis::{get_redis_connection, Redis01Pool};
+
+use crate::database::{Redis01, RedisPool};
 use crate::session::{get_session_from_cookie, LoginMessage, save_session_id_to_cookie, SESSION_KEY_PREFIX, UserLoginForm, UserSession};
 use crate::template::{LoginTemplate, MainTemplate};
 
@@ -27,7 +28,7 @@ pub async fn user_login(Query(login_msg): Query<LoginMessage>) -> Result<Html<St
 
 /// Session场景-登录操作
 pub async fn login_action(
-    Extension(pool): Extension<Redis01Pool>,
+    Extension(pool): Extension<RedisPool<Redis01>>,
     Form(frm): Form<UserLoginForm>,
 ) -> Result<(StatusCode, HeaderMap, ()), String> {
     let mut headers = HeaderMap::new();
@@ -67,7 +68,7 @@ pub async fn login_action(
 
 /// 退出登录
 pub async fn logout_action(
-    Extension(Redis01Pool(pool)): Extension<Redis01Pool>,
+    Extension(pool): Extension<RedisPool<Redis01>>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, HeaderMap, ()), String> {
     let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
@@ -75,7 +76,9 @@ pub async fn logout_action(
     {
         // 从 redis 删除 Session
         let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
-        let mut conn = get_redis_connection(pool).await?;
+        let mut conn = pool.get().await.map_err(|err| {
+            format!("Redis 获取连接失败：{}", err)
+        })?;
         cmd("DEL")
             .arg(redis_key)
             .query_async(&mut conn)
@@ -92,12 +95,14 @@ pub async fn logout_action(
 /// Session场景-用户首页界面
 #[debug_handler]
 pub async fn user_main(
-    Extension(Redis01Pool(_pool)): Extension<Redis01Pool>,
+    Extension(pool): Extension<RedisPool<Redis01>>,
     headers: HeaderMap,
 ) -> Result<Html<String>, String> {
     let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
     let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
-    let mut conn = get_redis_connection(_pool).await?;
+    let mut conn = pool.get().await.map_err(|err| {
+        format!("Redis 获取连接失败：{}", err)
+    })?;
     let session_str: String = cmd("GET")
         .arg(redis_key)
         .query_async(&mut conn)

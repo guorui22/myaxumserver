@@ -19,6 +19,7 @@ use tracing::Level;
 #[cfg(not(debug_assertions))]
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
+use myfront::database::{init_mysql_conn_pool, init_redis_conn_pool, MySQL01, MySQLPool, Redis01, RedisPool};
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login, user_main};
 use myfront::my_request_id::MyMakeRequestId;
 #[cfg(not(debug_assertions))]
@@ -26,8 +27,6 @@ use myfront::my_tracing::get_my_file_writer;
 use myfront::my_tracing::get_my_format;
 #[cfg(debug_assertions)]
 use myfront::my_tracing::get_my_stdout_writer;
-use myfront::mysql::{init_mysql_conn_pool, MySQL01, MySQLPool};
-use myfront::redis::{init_redis_conn_pool, Redis01Pool};
 use myfront::share::{init_server_config, UploadPath, watch_ctrl_c_to_exit};
 
 #[tokio::main]
@@ -129,7 +128,7 @@ async fn main() -> Result<(), String> {
                 .layer(DefaultBodyLimit::disable()) // 禁用请求体大小默认2MB的限制
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))// 限制请求体大小为 100MB
                 .layer(Extension(MySQLPool::<MySQL01>::new(mysql_01_pool))) // 共享MySQL连接池
-                .layer(Extension(Redis01Pool(redis_01_pool))) // 共享Redis连接池
+                .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool))) // 共享Redis连接池
                 .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() })) // 共享文件上传路径
                 .layer(CompressionLayer::new()) // 启用压缩
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
