@@ -125,12 +125,18 @@ async fn main() -> Result<(), String> {
         .route("/uploadfile", get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
         .layer(
             ServiceBuilder::new()
-                .layer(DefaultBodyLimit::disable()) // 禁用请求体大小默认2MB的限制
-                .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))// 限制请求体大小为 100MB
-                .layer(Extension(MySQLPool::<MySQL01>::new(mysql_01_pool))) // 共享MySQL连接池
-                .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool))) // 共享Redis连接池
-                .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() })) // 共享文件上传路径
-                .layer(CompressionLayer::new()) // 启用压缩
+                // 禁用请求体大小默认2MB的限制
+                .layer(DefaultBodyLimit::disable())
+                // 限制请求体大小为 100MB
+                .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))
+                // 共享MySQL01数据库连接池
+                .layer(Extension(MySQLPool::<MySQL01>::new(mysql_01_pool)))
+                // 共享Redis01数据库连接池
+                .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
+                // 共享文件上传路径
+                .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
+                // 启用数据压缩
+                .layer(CompressionLayer::new())
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
                 .layer(SetRequestIdLayer::new(
                     x_request_id.clone(),
@@ -138,12 +144,14 @@ async fn main() -> Result<(), String> {
                 ))
                 // 传播全局请求ID `x-request-id` 从请求头到响应头中
                 .layer(PropagateRequestIdLayer::new(x_request_id))
-                .layer(TraceLayer::new_for_http()) // 启用http请求日志追踪
+                // 启用http请求日志追踪
+                .layer(TraceLayer::new_for_http())
+                // 启用跨域请求控制
                 .layer(
                     CorsLayer::new()
                         .allow_methods([Method::GET, Method::POST])
                         .allow_origin(Any),
-                )// 启用跨域
+                )
         );
     let default_host = &String::from("127.0.0.1");
     let default_port = &String::from("5000");

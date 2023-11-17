@@ -3,8 +3,8 @@ use axum_macros::debug_handler;
 
 /// 测试函数
 #[debug_handler]
-pub async fn index() -> &'static str {
-    "Welcome to chronology!"
+pub async fn index() -> String {
+    format!("Welcome to you! at {}", chrono::Local::now())
 }
 
 /// 本站页面跳转
