@@ -1,7 +1,6 @@
 pub mod jwt;
 pub mod share;
 pub mod session;
-pub mod upload_file;
 pub mod handler;
 pub mod database;
 pub mod error;

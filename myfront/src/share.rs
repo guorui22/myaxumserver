@@ -16,7 +16,7 @@ pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, 
         let path_to_ini = root_path.join("conf").join("conf.toml");
 
     #[cfg(windows)]
-        let path_to_ini = root_path.join("conf_windows.ini");
+        let path_to_ini = root_path.join("conf_windows.toml");
 
     Config::builder()
         .add_source(config::File::from(path_to_ini))
