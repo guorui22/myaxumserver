@@ -3,7 +3,8 @@ use chrono::Local;
 use tracing_subscriber::fmt::format::{Format, Full, Writer};
 use tracing_subscriber::fmt::time::FormatTime;
 
-// 用来格式化日志的输出时间格式
+/// 用来自定义日志中的时间格式，
+///
 pub struct LocalTimer;
 
 impl FormatTime for LocalTimer {
