@@ -24,10 +24,10 @@ use myfront::handler::{get_jwt_token, get_protected_content, index, login_action
 use myfront::my_request_id::MyMakeRequestId;
 #[cfg(not(debug_assertions))]
 use myfront::my_tracing::get_my_file_writer;
-use myfront::my_tracing::get_my_format;
-#[cfg(debug_assertions)]
-use myfront::my_tracing::get_my_stdout_writer;
 use myfront::share::{init_server_config, UploadPath, watch_ctrl_c_to_exit};
+use myfront::tracing::get_my_format;
+#[cfg(debug_assertions)]
+use myfront::tracing::get_my_stdout_writer;
 
 #[tokio::main]
 async fn main() -> Result<(), String> {

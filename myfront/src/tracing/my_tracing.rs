@@ -1,15 +1,14 @@
-use crate::my_tracing;
 use chrono::Local;
 use tracing_subscriber::fmt::format::{Format, Full, Writer};
 use tracing_subscriber::fmt::time::FormatTime;
 
-/// 用来自定义日志中的时间格式，
-///
+/// 用来自定义日志中的时间格式
+/// 类似 2023-11-17 09:48:50.616722293 +08:00 格式
 pub struct LocalTimer;
 
 impl FormatTime for LocalTimer {
     fn format_time(&self, w: &mut Writer<'_>) -> std::fmt::Result {
-        write!(w, "{}", Local::now().format("%F %T%.6f %:z"))
+        write!(w, "{}", Local::now().format("%F %T%.9f %:z"))
     }
 }
 
@@ -47,6 +46,8 @@ use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
 #[cfg(not(debug_assertions))]
 use std::path::Path;
+use crate::tracing::my_tracing;
+
 #[cfg(not(debug_assertions))]
 pub fn get_my_file_writer(
     directory: impl AsRef<Path>,

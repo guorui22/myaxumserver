@@ -10,10 +10,6 @@ pub struct MyMakeRequestId;
 impl MakeRequestId for MyMakeRequestId {
     fn make_request_id<B>(&mut self, _request: &Request<B>) -> Option<RequestId> {
         let request_id = Uuid::new_v4().to_string();
-        if let Ok(x_request_id) = HeaderValue::from_str(request_id.as_ref()) {
-            Some(RequestId::new(x_request_id))
-        } else {
-            None
-        }
+        HeaderValue::from_str(request_id.as_ref()).map_or(None, |x| Some(RequestId::new(x)))
     }
 }
