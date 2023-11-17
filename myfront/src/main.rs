@@ -21,7 +21,7 @@ use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
 use myfront::database::{init_mysql_conn_pool, init_redis_conn_pool, MySQL01, MySQLPool, Redis01, RedisPool};
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login, user_main};
-use myfront::my_request_id::MyMakeRequestId;
+use myfront::global_request_id::MyMakeRequestId;
 #[cfg(not(debug_assertions))]
 use myfront::my_tracing::get_my_file_writer;
 use myfront::share::{init_server_config, UploadPath, watch_ctrl_c_to_exit};

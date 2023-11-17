@@ -1,5 +1,4 @@
 pub mod jwt;
-pub mod my_request_id;
 pub mod share;
 pub mod session;
 pub mod upload_file;
@@ -8,3 +7,4 @@ pub mod database;
 pub mod error;
 pub mod template;
 pub mod tracing;
+pub mod global_request_id;
