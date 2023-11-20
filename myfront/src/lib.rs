@@ -1,4 +1,3 @@
-pub mod jwt;
 pub mod share;
 pub mod session;
 pub mod handler;
@@ -7,3 +6,4 @@ pub mod error;
 pub mod template;
 pub mod tracing;
 pub mod global_request_id;
+pub mod auth;
