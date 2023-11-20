@@ -22,9 +22,9 @@ pub async fn get_jwt_token(Json(AuthInfo{ client_id: _client_id, client_pwd: _cl
     )?;
 
     // 检验用户ID和密码是否正确
-    let id = user.get("client_id")
+    let id = user.get("id")
         .ok_or(AuthError::MissingCredentials("用户ID不存在。".to_string()))?;
-    let pwd = user.get("client_pwd")
+    let pwd = user.get("pwd")
         .ok_or(AuthError::MissingCredentials("用户密码不存在。".to_string()))?;
 
     if !matches!(id, _client_id) && !matches!(pwd, _client_pwd) {
@@ -32,12 +32,12 @@ pub async fn get_jwt_token(Json(AuthInfo{ client_id: _client_id, client_pwd: _cl
     }
 
     // 获取用户名
-    let client_name = user.get("client_name")
+    let client_name = user.get("name")
         .ok_or(AuthError::UserInfoIncomplete("用户名不存在。".to_string()))?;
 
     // 构造 token 重要包含的信息(token 过期时间很重要)
     let claims = JWT.new_claims(_client_id, client_name.to_string(), 30);
-    let token = JWT.token(&claims).map_err(|err|AuthError::TokenCreation(err.to_string()));
+    let token = JWT.token(&claims).map_err(|err|AuthError::TokenCreation(err.to_string()))?;
 
     Ok(Json(json!({
         "status": 0,
