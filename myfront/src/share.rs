@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use axum::BoxError;
-use axum::http::{HeaderMap, Method, StatusCode, Uri};
+use axum::http::{Method, StatusCode, Uri};
 use config::Config;
 use tracing::info;
 
@@ -38,13 +38,6 @@ pub fn watch_ctrl_c_to_exit() {
             err.to_string()
         )
     });
-}
-
-/// 获取请求头中的 x-request-id
-pub fn get_request_id(headers: &HeaderMap) -> String {
-    headers
-        .get("x-request-id")
-        .map_or("".to_string(), |x| x.to_str().unwrap().to_string())
 }
 
 /// 通用错误处理提取器

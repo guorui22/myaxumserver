@@ -6,7 +6,7 @@ use tracing::info;
 use crate::auth;
 use crate::auth::{AuthError, Claims, JWT};
 use crate::handler::AuthInfo;
-use crate::share::get_request_id;
+use crate::global_request_id::get_request_id;
 
 /// 使用用户名&密码获取 JWT Token
 #[debug_handler]
