@@ -1,3 +1,4 @@
+use askama::Template;
 use serde::{Deserialize, Serialize};
 
 /// 用户登录表单
@@ -16,6 +17,21 @@ pub struct LoginMessage {
 /// 用户Session
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserSession {
+    pub username: String,
+    pub level: u8,
+}
+
+/// 登录页模板
+#[derive(Template)]
+#[template(path = "login.html")]
+pub struct LoginTemplate {
+    pub msg: String,
+}
+
+/// 用户首页模板
+#[derive(Template)]
+#[template(path = "main.html")]
+pub struct MainTemplate {
     pub username: String,
     pub level: u8,
 }

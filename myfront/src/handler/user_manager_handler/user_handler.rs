@@ -9,9 +9,8 @@ use serde_json::json;
 use uuid::Uuid;
 
 use crate::database::{Redis01, RedisPool};
-use crate::handler::{LoginMessage, UserLoginForm, UserSession};
+use crate::handler::{LoginMessage, LoginTemplate, MainTemplate, UserLoginForm, UserSession};
 use crate::session::{get_session_from_cookie, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS};
-use crate::template::{LoginTemplate, MainTemplate};
 
 /// Session场景-登录界面
 #[debug_handler]

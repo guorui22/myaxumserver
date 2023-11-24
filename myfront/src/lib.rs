@@ -3,7 +3,6 @@ pub mod session;
 pub mod handler;
 pub mod database;
 pub mod error;
-pub mod template;
 pub mod tracing;
 pub mod global_request_id;
 pub mod auth;

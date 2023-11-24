@@ -8,9 +8,7 @@ use axum::response::Html;
 use axum_macros::debug_handler;
 use serde_json::json;
 use uuid::Uuid;
-use crate::handler::UploadPath;
-
-use crate::template::UploadFileTemplate;
+use crate::handler::{UploadFileTemplate, UploadPath};
 
 /// 文件上传页面
 #[debug_handler]
