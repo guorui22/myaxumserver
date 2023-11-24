@@ -55,11 +55,7 @@ pub fn get_request_id(headers: &HeaderMap) -> String {
         .map_or("".to_string(), |x| x.to_str().unwrap().to_string())
 }
 
-/// 文件上传目录结构体
-#[derive(Debug, Clone, Deserialize)]
-pub struct UploadPath {
-    pub upload_path: String,
-}
+
 
 /// 通用错误处理提取器
 pub async fn handle_layer_error(
