@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// 用户登录表单
 #[derive(Deserialize)]
 pub struct UserLoginForm {
-    pub username: String,
+    pub usercode: String,
     pub password: String,
 }
 
@@ -33,5 +33,6 @@ pub struct LoginTemplate {
 #[template(path = "main.html")]
 pub struct MainTemplate {
     pub username: String,
+    pub usercode: String,
     pub level: u8,
 }
