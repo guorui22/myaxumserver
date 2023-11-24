@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::database::{Redis01, RedisPool};
 use crate::handler::{LoginMessage, UserLoginForm, UserSession};
-use crate::session::{get_session_from_cookie, save_session_id_to_cookie, SESSION_KEY_PREFIX};
+use crate::session::{get_session_from_cookie, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS};
 use crate::template::{LoginTemplate, MainTemplate};
 
 /// Session场景-登录界面
@@ -49,7 +49,7 @@ pub async fn login_action(
             let user_session = json!(user_session).to_string();
 
             // 将 session 保存到 redis
-            let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
+            let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);
             let mut conn = pool.get().await.map_err(|err| {
                 format!("Redis 获取连接失败：{}", err)
             })?;
@@ -76,7 +76,7 @@ pub async fn logout_action(
     let mut headers = HeaderMap::new();
     {
         // 从 redis 删除 Session
-        let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
+        let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);
         let mut conn = pool.get().await.map_err(|err| {
             format!("Redis 获取连接失败：{}", err)
         })?;
@@ -100,7 +100,7 @@ pub async fn user_main(
     headers: HeaderMap,
 ) -> Result<Html<String>, String> {
     let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
-    let redis_key = format!("{}{}", SESSION_KEY_PREFIX, session_id);
+    let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);
     let mut conn = _pool.get().await.map_err(|err| {
         format!("Redis 获取连接失败：{}", err)
     })?;

@@ -1,5 +1,5 @@
 mod my_request_id;
-mod model;
+mod global_request_id_model;
 
 pub use my_request_id::*;
-pub use model::*;
+pub use global_request_id_model::*;

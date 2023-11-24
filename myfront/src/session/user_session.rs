@@ -1,17 +1,17 @@
 use axum::headers::HeaderMap;
 
 /// Session ID 的 Cookie 名称，用在前端浏览器中
-const SESSION_ID_COOKIE_NAME: &str = "axum_rs_session_id";
+const SESSION_ID_NAME_FOR_COOKIE: &str = "axum_rs_session_id";
 /// Session ID 的前缀，用在 Redis 数据库显示为文件夹
-pub const SESSION_KEY_PREFIX: &str = "axum_rs_session:";
+pub const SESSION_PREFIX_FOR_REDIS: &str = "axum_rs_session:";
 
 /// 将 Session ID 保存到浏览器 Cookie
 pub fn save_session_id_to_cookie(session_id: &str, headers: &mut HeaderMap) {
     let cookie = if session_id.is_empty() {
         // 设置 Cookie 过期
-        format!("{}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;", SESSION_ID_COOKIE_NAME)
+        format!("{}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;", SESSION_ID_NAME_FOR_COOKIE)
     } else {
-        format!("{}={}", SESSION_ID_COOKIE_NAME, session_id)
+        format!("{}={}", SESSION_ID_NAME_FOR_COOKIE, session_id)
     };
     headers.insert(
         axum::http::header::SET_COOKIE,
@@ -34,7 +34,7 @@ pub fn get_session_from_cookie(headers: &HeaderMap) -> Option<String> {
         let cookie_pair: Vec<&str> = cookie.split('=').collect();
         let cookie_name = cookie_pair[0].trim();
         let cookie_value = cookie_pair[1].trim();
-        if cookie_name == SESSION_ID_COOKIE_NAME && !cookie_value.is_empty() {
+        if cookie_name == SESSION_ID_NAME_FOR_COOKIE && !cookie_value.is_empty() {
             session_id = Some(cookie_value.to_string());
             break;
         }

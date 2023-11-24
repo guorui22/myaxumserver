@@ -1,7 +1,7 @@
 mod mysql;
 mod redis;
-mod model;
+mod db_model;
 
 pub use mysql::*;
 pub use redis::*;
-pub use model::*;
+pub use db_model::*;

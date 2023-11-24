@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use axum::BoxError;
-use axum::http::{Method, StatusCode, Uri};
 use config::Config;
 use tracing::info;
 
@@ -38,18 +36,4 @@ pub fn watch_ctrl_c_to_exit() {
             err.to_string()
         )
     });
-}
-
-/// 通用错误处理提取器
-pub async fn handle_layer_error(
-    // `Method` and `Uri` are extractors so they can be used here
-    method: Method,
-    uri: Uri,
-    // the last argument must be the error itself
-    err: BoxError
-) -> (StatusCode, String) {
-    (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        format!("`{} {}` failed with {}", method, uri, err),
-    )
 }

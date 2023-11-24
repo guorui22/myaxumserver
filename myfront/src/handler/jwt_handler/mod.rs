@@ -1,6 +1,6 @@
-pub use handler::*;
-pub use model::*;
+pub use my_jwt_handler::*;
+pub use jwt_model::*;
 
-mod handler;
-mod model;
+mod my_jwt_handler;
+mod jwt_model;
 

@@ -24,7 +24,7 @@ use myfront::global_request_id::MyMakeRequestId;
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
 #[cfg(not(debug_assertions))]
 use myfront::my_tracing::get_my_file_writer;
-use myfront::share::{init_server_config, watch_ctrl_c_to_exit};
+use myfront::main_util::{init_server_config, watch_ctrl_c_to_exit};
 use myfront::tracing::get_my_format;
 #[cfg(debug_assertions)]
 use myfront::tracing::get_my_stdout_writer;
