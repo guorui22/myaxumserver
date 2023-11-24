@@ -14,7 +14,7 @@ pub struct LoginMessage {
     pub msg: Option<String>,
 }
 
-/// 用户Session
+/// 用户 Session
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserSession {
     pub username: String,

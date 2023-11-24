@@ -2,14 +2,14 @@ use std::fmt::Display;
 
 use axum::{async_trait, TypedHeader};
 use axum::extract::FromRequestParts;
-use axum::headers::Authorization;
+use axum::headers::{Authorization, Cookie};
 use axum::headers::authorization::Bearer;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
 use chrono::{Local, LocalResult, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::auth::{Jwt, JWT};
+use crate::auth::{Jwt, JWT, SESSION_ID_NAME_FOR_COOKIE};
 
 /// 经过认证的用户信息
 /// id      用户唯一ID
@@ -44,13 +44,17 @@ impl<S> FromRequestParts<S> for Claims
     type Rejection = (StatusCode, String);
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // Extract the token from the authorization header
-        let TypedHeader(Authorization(bearer)) =
-            TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
-                .await
-                .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid token".to_string()))?;
+        // Get the token from the request, either from the Authorization header or from the Cookie header
+        let token = if let Ok(TypedHeader(Authorization(bearer))) = TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state).await {
+            bearer.token().to_string()
+        } else if let Ok(TypedHeader(cookies)) = TypedHeader::<Cookie>::from_request_parts(parts, state).await {
+            cookies.get(SESSION_ID_NAME_FOR_COOKIE).map(|cookie| cookie.to_string()).unwrap_or_default()
+        } else {
+            return Err((StatusCode::BAD_REQUEST, "Missing Authorization Header".to_string()));
+        };
+
         // Decode the user data
-        let claims = JWT.verify_and_get(bearer.token()).map_err(|err| (StatusCode::BAD_REQUEST, err.to_string()))?;
+        let claims = JWT.verify_and_get(&token).map_err(|err| (StatusCode::BAD_REQUEST, err.to_string()))?;
 
         // Check the token expiration
         let exp = if let LocalResult::Single(expire_datetime) = Local.timestamp_opt(Jwt::calc_claims_exp(claims.exp), 0) {

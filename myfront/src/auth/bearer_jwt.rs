@@ -7,9 +7,9 @@ use serde_json::json;
 
 use crate::auth::{AuthError, Claims};
 
-// 测试用数据
-// 1、用户列表
-// 2、JWT密钥
+/// 测试用数据
+/// 1、用户列表
+/// 2、JWT密钥
 lazy_static! {
     pub static ref USER_MAP: HashMap<String, serde_json::Value> = {
         let mut map = HashMap::new();
@@ -21,6 +21,19 @@ lazy_static! {
         map
     };
     pub static ref JWT: Jwt = Jwt::new("不负信赖".to_string(), "圣农集团".to_string());
+}
+
+/// 从 USER_MAP 中获取用户对象
+/// id      用户唯一ID
+/// pwd     用户密码
+pub fn get_auth_user(id: &str, pwd: &str) -> Option<&'static serde_json::Value> {
+    USER_MAP.get(id).and_then(|user| {
+        if user["pwd"] == pwd {
+            Some(user)
+        } else {
+            None
+        }
+    })
 }
 
 

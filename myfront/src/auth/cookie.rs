@@ -1,7 +1,7 @@
 use axum::headers::HeaderMap;
 
 /// Session ID 的 Cookie 名称，用在前端浏览器中
-const SESSION_ID_NAME_FOR_COOKIE: &str = "axum_rs_session_id";
+pub const SESSION_ID_NAME_FOR_COOKIE: &str = "axum_rs_session_id";
 /// Session ID 的前缀，用在 Redis 数据库显示为文件夹
 pub const SESSION_PREFIX_FOR_REDIS: &str = "axum_rs_session:";
 

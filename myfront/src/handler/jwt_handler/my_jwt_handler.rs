@@ -16,6 +16,7 @@ pub async fn get_jwt_token(Json(AuthInfo{ client_id: _client_id, client_pwd: _cl
     if _client_id.is_empty() || _client_pwd.is_empty() {
         return Err(AuthError::MissingCredentials("用户ID或密码为空。".to_string()));
     }
+
     // 检验用户ID是否存在
     let user = auth::USER_MAP.get(&_client_id).ok_or(
         AuthError::UserNotExist("用户不存在。".to_string())
