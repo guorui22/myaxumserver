@@ -22,8 +22,8 @@ tracing-subscriber = "0.3.17"# 日志订阅器
 # Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
 sea-orm = { version = "0.12.3", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
 # 错误处理依赖
-thiserror = "1.0.39" # 自定义错误类型
-anyhow = "1.0.69" # 统一错误类型
+#thiserror = "1.0.39" # 自定义错误类型
+#anyhow = "1.0.69" # 统一错误类型
 # 序列化与反序列化依赖
 serde = { version = "1.0.189", features = ["derive"] } # 序列化与反序列化
 serde_json = "1.0.107"# JSON 序列化与反序列化
@@ -41,3 +41,5 @@ askama = { version = "0.12.1", features = ["serde"] }
 config = "0.13.3" # 配置文件读取
 # 用户认证相关
 libauth = { path = "../libauth" } # 用户认证相关
+# 错误处理相关
+liberror = { path = "../liberror" } # 自定义错误类型
