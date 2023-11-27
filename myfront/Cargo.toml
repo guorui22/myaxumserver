@@ -7,12 +7,13 @@ edition = "2021"
 
 [dependencies]
 # Axum Web框架依赖，headers 处理请求头，multipart 处理文件上传
-axum = { version = "0.6", features = ["headers", "multipart"] } # 基于 tokio 的 Web 框架
-axum-macros = { version = "0.3.8", features = [] } # 可以使用#[debug_handler]标注获取更准确的错误提示
+axum = { version = "0.7.1", features = [ "multipart"] } # 基于 tokio 的 Web 框架
+axum-extra = { version = "0.9.0", features = [] } # Axum Web框架扩展工具集
+axum-macros = { version = "0.4.0", features = [] } # 可以使用#[debug_handler]标注获取更准确的错误提示
 tokio = { version = "1", features = ["full"] } # 异步运行时
 # Tower HTTP 中间件依赖
 tower = { version = "0.4.13", features = ["limit"] } # 中间件支持
-tower-http = { version = "0.4.4", features = ["full"] } # HTTP 中间件支持
+tower-http = { version = "0.5.0", features = ["full"] } # HTTP 中间件支持
 # Tracing 日志框架依赖
 chrono = "0.4.31"   # for date and time
 tracing = "0.1.37"  # 日志框架
@@ -40,3 +41,5 @@ deadpool-redis = { version = "0.13.0", features = ["serde"] }
 askama = { version = "0.12.1", features = ["serde"] }
 # 配置文件读取
 config = "0.13.3" # 配置文件读取
+# 用户认证相关
+libauth = { path = "../libauth" } # 用户认证相关

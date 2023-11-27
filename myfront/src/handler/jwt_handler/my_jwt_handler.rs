@@ -4,7 +4,8 @@ use axum_macros::debug_handler;
 use serde_json::json;
 use tracing::info;
 
-use crate::auth::{AuthError, Claims, get_auth_user, JWT, TOKEN_EXP};
+use libauth::{AuthError, Claims, get_auth_user, JWT, TOKEN_EXP};
+
 use crate::global_request_id::get_request_id;
 use crate::handler::AuthInfo;
 

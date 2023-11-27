@@ -1,4 +1,5 @@
-use axum::http::{HeaderValue, Request};
+use axum::extract::Request;
+use axum_extra::headers::HeaderValue;
 use tower_http::request_id::{MakeRequestId, RequestId};
 use uuid::Uuid;
 

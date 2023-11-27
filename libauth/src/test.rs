@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use crate::auth::Jwt;
+    use crate::Jwt;
 
     const SECRET: &str = "不负信赖";
     const ISS: &str = "圣农集团";

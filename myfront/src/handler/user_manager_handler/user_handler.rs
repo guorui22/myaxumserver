@@ -8,7 +8,7 @@ use deadpool_redis::redis::cmd;
 use serde_json::json;
 use tracing::info;
 
-use crate::auth::{Claims, get_auth_user, JWT, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS, TOKEN_EXP};
+use libauth::{Claims, get_auth_user, JWT, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS, TOKEN_EXP};
 use crate::database::{Redis01, RedisPool};
 use crate::global_request_id::get_request_id;
 use crate::handler::{LoginMessage, LoginTemplate, MainTemplate, UserLoginForm, UserSession};
@@ -110,7 +110,7 @@ pub async fn user_main(
 
     let request_id = get_request_id(&headers);
     info!("x-request-id={}", request_id);
-    info!("claims={:?}", claims);
+    info!("claims={:?}", _claims);
 
     let session_id = _claims.code.clone();
     let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);

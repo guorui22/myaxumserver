@@ -1,4 +1,4 @@
-use axum::headers::HeaderMap;
+use axum_extra::headers::HeaderMap;
 
 /// Session ID 的 Cookie 名称，用在前端浏览器中
 pub const TOKEN_NAME_FOR_COOKIE: &str = "axum_rs_token";

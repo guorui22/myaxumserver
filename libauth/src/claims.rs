@@ -1,15 +1,17 @@
 use std::fmt::Display;
 
-use axum::{async_trait, TypedHeader};
+use axum::async_trait;
 use axum::extract::FromRequestParts;
-use axum::headers::{Authorization, Cookie};
-use axum::headers::authorization::Bearer;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
+use axum_extra::headers::{Cookie};
+use axum_extra::headers::Authorization;
+use axum_extra::headers::authorization::Bearer;
+use axum_extra::TypedHeader;
 use chrono::{Local, LocalResult, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::auth::{Jwt, JWT, TOKEN_NAME_FOR_COOKIE};
+use crate::{Jwt, JWT, TOKEN_NAME_FOR_COOKIE};
 
 /// 经过认证的用户信息
 /// id      用户唯一ID

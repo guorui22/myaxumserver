@@ -30,7 +30,7 @@ Content-Type: application/json; charset=utf-8
 Accept: application/json, text/plain, */*
 
 {
-  "client_id": "07733",
+  "client_code": "07733",
   "client_pwd": "123581321"
 }
 
@@ -38,7 +38,7 @@ Accept: application/json, text/plain, */*
 GET http://127.0.0.1:5000/get_protected_content
 Content-Type: application/json; charset=utf-8
 Accept: application/json, text/plain, */*
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjA3NzMzIiwibmFtZSI6IumDreedvyIsImlzcyI6IuWco-WGnOmbhuWboiIsImV4cCI6MTcwMDgzNDMwOX0.ZqAvtCfpk1SdO-RTYvA7o487VxT-ti8SxiHeOHvHM3E
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3MzMiLCJuYW1lIjoi6YOt552_IiwiaXNzIjoi5Zyj5Yac6ZuG5ZuiIiwiZXhwIjoxNzAxMDgzMTgxfQ.4xbdQlUt7-1tNmtSiwaQZo0dahr5c6rSpYdOphgy_lI
 
 
 

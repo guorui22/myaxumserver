@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-
 use chrono::{Duration, Local};
 use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use lazy_static::lazy_static;
 use serde_json::json;
 
-use crate::auth::{AuthError, Claims};
+use crate::{AuthError, Claims};
 
 /// 测试用数据: Token 过期时间，单位秒
 pub const TOKEN_EXP: i64 = 1200;
