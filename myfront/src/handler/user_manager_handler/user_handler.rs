@@ -110,7 +110,7 @@ pub async fn user_main(
 
     let request_id = get_request_id(&headers);
     info!("x-request-id={}", request_id);
-    info!("claims={:?}", _claims);
+    info!("claims={}", _claims);
 
     let session_id = _claims.code.clone();
     let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);

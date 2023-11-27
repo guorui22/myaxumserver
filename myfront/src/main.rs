@@ -153,25 +153,13 @@ async fn main() -> Result<(), String> {
                         .allow_origin(Any),
                 )
         );
-    let default_host = &String::from("127.0.0.1");
-    let default_port = &String::from("5000");
-    let host = ini_main.get("MN_SERVER_HOST").unwrap_or(default_host);
-    let port = ini_main.get("MN_SERVER_PORT").unwrap_or(default_port);
+    let host = ini_main.get("MN_SERVER_HOST").map_or("127.0.0.1", |h| h);
+    let port = ini_main.get("MN_SERVER_PORT").map_or("5000", |p| p);
 
     let listener = tokio::net::TcpListener::bind(&format!("{host}:{port}")).await.unwrap();
-    axum::serve(listener, router.into_make_service()).await
-        .map_err(|err| {
-            format!("服务启动失败：{:?}", err)
-        })?;
+    axum::serve(listener, router).await.map_err(|err| {
+        format!("服务启动失败：{:?}", err)
+    })?;
 
-    // axum::Server::bind(&format!("{host}:{port}").parse().map_err(|err| {
-    //         format!("服务地址与端口初始化错误：{:?}", err)
-    //     })?)
-    //     // 挂载路由 router 到应用监听端口
-    //     .serve(router.into_make_service())
-    //     .await
-    //     .map_err(|err| {
-    //         format!("服务启动失败：{:?}", err)
-    //     })?;
     Ok(())
 }
