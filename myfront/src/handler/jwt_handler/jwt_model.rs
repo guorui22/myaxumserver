@@ -5,6 +5,6 @@ use serde::Deserialize;
 /// client_pwd   客户密码
 #[derive(Debug, Deserialize)]
 pub struct AuthInfo {
-    pub client_id: String,
+    pub client_code: String,
     pub client_pwd: String,
 }

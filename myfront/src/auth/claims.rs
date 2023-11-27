@@ -9,7 +9,7 @@ use axum::http::StatusCode;
 use chrono::{Local, LocalResult, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::auth::{Jwt, JWT, SESSION_ID_NAME_FOR_COOKIE};
+use crate::auth::{Jwt, JWT, TOKEN_NAME_FOR_COOKIE};
 
 /// 经过认证的用户信息
 /// id      用户唯一ID
@@ -18,7 +18,7 @@ use crate::auth::{Jwt, JWT, SESSION_ID_NAME_FOR_COOKIE};
 /// exp     过期时间点，单位秒，从1970-01-01T00:00:00Z开始计算
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Claims {
-    pub id: String,
+    pub code: String,
     pub name: String,
     pub iss: String,
     pub exp: i64,
@@ -30,8 +30,8 @@ impl Display for Claims {
         let exp = Local.timestamp_opt(self.exp, 0).unwrap().to_string();
         write!(
             f,
-            "Id: {}\nName: {}\nExpire: {:?}",
-            self.id, self.name, exp)
+            "Code: {}\nName: {}\nExpire: {:?}",
+            self.code, self.name, exp)
     }
 }
 
@@ -48,7 +48,7 @@ impl<S> FromRequestParts<S> for Claims
         let token = if let Ok(TypedHeader(Authorization(bearer))) = TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state).await {
             bearer.token().to_string()
         } else if let Ok(TypedHeader(cookies)) = TypedHeader::<Cookie>::from_request_parts(parts, state).await {
-            cookies.get(SESSION_ID_NAME_FOR_COOKIE).map(|cookie| cookie.to_string()).unwrap_or_default()
+            cookies.get(TOKEN_NAME_FOR_COOKIE).map(|cookie| cookie.to_string()).unwrap_or_default()
         } else {
             return Err((StatusCode::BAD_REQUEST, "Missing Authorization Header".to_string()));
         };

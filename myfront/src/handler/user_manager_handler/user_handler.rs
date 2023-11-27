@@ -6,9 +6,11 @@ use axum::response::Html;
 use axum_macros::debug_handler;
 use deadpool_redis::redis::cmd;
 use serde_json::json;
+use tracing::info;
 
-use crate::auth::{Claims, get_auth_user, get_session_from_cookie, JWT, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS};
+use crate::auth::{Claims, get_auth_user, JWT, save_session_id_to_cookie, SESSION_PREFIX_FOR_REDIS, TOKEN_EXP};
 use crate::database::{Redis01, RedisPool};
+use crate::global_request_id::get_request_id;
 use crate::handler::{LoginMessage, LoginTemplate, MainTemplate, UserLoginForm, UserSession};
 
 /// Session场景-登录界面
@@ -36,7 +38,7 @@ pub async fn login_action(
         // 获取用户名
         let client_name = user.get("name").map_or("", |val| val.as_str().unwrap_or_default());
         // 构造 token 重要包含的信息(token 过期时间很重要)
-        let claims = JWT.new_claims(frm.usercode.clone(), client_name.to_string(), 30);
+        let claims = JWT.new_claims(frm.usercode.clone(), client_name.to_string(), TOKEN_EXP);
         if let Ok(token) = JWT.token(&claims) {
             // 将 session ID 保存到 Cookie
             save_session_id_to_cookie(&token, &mut headers);
@@ -48,14 +50,14 @@ pub async fn login_action(
             let user_session = json!(user_session).to_string();
 
             // 将 session 保存到 redis
-            let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, token);
+            let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, frm.usercode);
             let mut conn = pool.get().await.map_err(|err| {
                 format!("Redis 获取连接失败：{}", err)
             })?;
             // session 将在20分钟后自动过期
             cmd("SETEX")
                 .arg(redis_key.clone())
-                .arg(1200)
+                .arg(TOKEN_EXP)
                 .arg(user_session)
                 .query_async::<_, ()>(&mut conn)
                 .await
@@ -74,10 +76,10 @@ pub async fn login_action(
 
 /// 退出登录
 pub async fn logout_action(
+    claims: Claims,
     Extension(pool): Extension<RedisPool<Redis01>>,
-    headers: HeaderMap,
 ) -> Result<(StatusCode, HeaderMap, ()), String> {
-    let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
+    let session_id = claims.code;
     let mut headers = HeaderMap::new();
     {
         // 从 redis 删除 Session
@@ -105,7 +107,12 @@ pub async fn user_main(
     Extension(_pool): Extension<RedisPool<Redis01>>,
     headers: HeaderMap,
 ) -> Result<Html<String>, String> {
-    let session_id = get_session_from_cookie(&headers).ok_or("从 Cookie 中获取 Session ID 失败。")?;
+
+    let request_id = get_request_id(&headers);
+    info!("x-request-id={}", request_id);
+    info!("claims={:?}", claims);
+
+    let session_id = _claims.code.clone();
     let redis_key = format!("{}{}", SESSION_PREFIX_FOR_REDIS, session_id);
     let mut conn = _pool.get().await.map_err(|err| {
         format!("Redis 获取连接失败：{}", err)
@@ -117,7 +124,7 @@ pub async fn user_main(
         .map_err(|err| format!("从 Redis 获取 Session 失败：{err}"))?;
     let UserSession { username, level } =
         serde_json::from_str(&session_str).map_err(|err| format!("反序列化 UserSession 失败：{err}"))?;
-    let html = MainTemplate { username, usercode: _claims.id, level }.render().map_err(|err| {
+    let html = MainTemplate { username, usercode: _claims.code, level }.render().map_err(|err| {
         format!("main 模板渲染失败：{}", err)
     })?;
     Ok(Html(html))

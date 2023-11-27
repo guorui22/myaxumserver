@@ -7,12 +7,15 @@ use serde_json::json;
 
 use crate::auth::{AuthError, Claims};
 
+/// 测试用数据: Token 过期时间，单位秒
+pub const TOKEN_EXP: i64 = 1200;
+
 lazy_static! {
     /// 测试用数据: 用户列表
     pub static ref USER_MAP: HashMap<String, serde_json::Value> = {
         let mut map = HashMap::new();
         map.insert("07733".to_string(), json!({
-            "id": "07733",
+            "code": "07733",
             "name": "郭睿",
             "pwd": "123581321",
         }));
@@ -25,8 +28,8 @@ lazy_static! {
 /// 测试方法：从 USER_MAP 中获取用户对象
 /// id      用户唯一ID
 /// pwd     用户密码
-pub fn get_auth_user(id: &str, pwd: &str) -> Option<&'static serde_json::Value> {
-    USER_MAP.get(id).and_then(|user| {
+pub fn get_auth_user(code: &str, pwd: &str) -> Option<&'static serde_json::Value> {
+    USER_MAP.get(code).and_then(|user| {
         if user["pwd"] == pwd {
             Some(user)
         } else {
@@ -55,7 +58,7 @@ impl Jwt {
     /// life     过期时间长度，单位秒
     pub fn new_claims(&self, id: String, name: String, life: i64) -> Claims {
         Claims {
-            id,
+            code: id,
             name,
             iss: self.iss.clone(),
             exp: Jwt::calc_claims_exp(life),
@@ -63,7 +66,7 @@ impl Jwt {
     }
     /// 从一个已存在的 Claims 生成新的 Claims 结构体的实例
     pub fn new_claims_with(&self, claims: Claims) -> Claims {
-        self.new_claims(claims.id.clone(), claims.name.clone(), claims.exp)
+        self.new_claims(claims.code.clone(), claims.name.clone(), claims.exp)
     }
 
     /// 计算 Token 过期时间
