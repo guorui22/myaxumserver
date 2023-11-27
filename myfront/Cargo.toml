@@ -7,35 +7,35 @@ edition = "2021"
 
 [dependencies]
 # Axum Web框架依赖，headers 处理请求头，multipart 处理文件上传
-axum = { version = "0.7.1", features = [ "multipart"] } # 基于 tokio 的 Web 框架
-axum-extra = { version = "0.9.0", features = [] } # Axum Web框架扩展工具集
-axum-macros = { version = "0.4.0", features = [] } # 可以使用#[debug_handler]标注获取更准确的错误提示
+axum = { version = "0.7", features = [ "multipart"] } # 基于 tokio 的 Web 框架
+axum-extra = { version = "0.9", features = [] } # Axum Web框架扩展工具集
+axum-macros = { version = "0.4", features = [] } # 可以使用#[debug_handler]标注获取更准确的错误提示
 tokio = { version = "1", features = ["full"] } # 异步运行时
 # Tower HTTP 中间件依赖
-tower = { version = "0.4.13", features = ["limit"] } # 中间件支持
-tower-http = { version = "0.5.0", features = ["full"] } # HTTP 中间件支持
+tower = { version = "0.4", features = ["limit"] } # 中间件支持
+tower-http = { version = "0.5", features = ["full"] } # HTTP 中间件支持
 # Tracing 日志框架依赖
-chrono = "0.4.31"   # for date and time
-tracing = "0.1.37"  # 日志框架
-tracing-appender = "0.2.2"  # 日志输出器
-tracing-subscriber = "0.3.17"# 日志订阅器
+chrono = "0.4"   # for date and time
+tracing = "0.1"  # 日志框架
+tracing-appender = "0.2"  # 日志输出器
+tracing-subscriber = "0.3"# 日志订阅器
 # Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
-sea-orm = { version = "0.12.3", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
+sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
 # 序列化与反序列化依赖
-serde = { version = "1.0.189", features = ["derive"] } # 序列化与反序列化
-serde_json = "1.0.107"# JSON 序列化与反序列化
+serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
+serde_json = "1.0"# JSON 序列化与反序列化
 # UUID 依赖库，生成全局唯一请求ID
-uuid = { version = "1.5.0", features = ["v4", "fast-rng", "macro-diagnostics"] } # uuid依赖库
+uuid = { version = "1.6", features = ["v4", "fast-rng", "macro-diagnostics"] } # uuid依赖库
 # 监听 Ctrl+C 退出应用
-ctrlc = "3.4.1" # ctrl+c 退出应用
+ctrlc = "3.4" # ctrl+c 退出应用
 # 声明惰性加载的静态数据
-lazy_static = { version = "1.4.0", features = [] } # 全局静态变量
+lazy_static = { version = "1.4", features = [] } # 全局静态变量
 # Redis 数据库连接池
-deadpool-redis = { version = "0.13.0", features = ["serde"] }
+deadpool-redis = { version = "0.13", features = ["serde"] }
 # 文本模板工具库
-askama = { version = "0.12.1", features = ["serde"] }
+askama = { version = "0.12", features = ["serde"] }
 # 配置文件读取
-config = "0.13.3" # 配置文件读取
+config = "0.13" # 配置文件读取
 # 用户认证相关
 libauth = { path = "../libauth" } # 用户认证相关
 # 错误处理相关

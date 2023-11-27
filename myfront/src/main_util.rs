@@ -10,13 +10,13 @@ pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, 
         std::env::current_dir().map_err(|err| format!("{}", err))?;
 
     #[cfg(not(windows))]
-        let path_to_ini = root_path.join("conf").join("conf.toml");
+        let path_to_conf = root_path.join("conf").join("conf.toml");
 
     #[cfg(windows)]
-        let path_to_ini = root_path.join("conf_windows.toml");
+        let path_to_conf = root_path.join("conf_windows.toml");
 
     Config::builder()
-        .add_source(config::File::from(path_to_ini))
+        .add_source(config::File::from(path_to_conf))
         .build()
         .map_err(|err| format!("{}", err))?
         .try_deserialize::<HashMap<String, HashMap<String, String>>>()
