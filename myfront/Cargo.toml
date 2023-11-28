@@ -3,8 +3,6 @@ name = "myfront"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 # Axum Web框架依赖，headers 处理请求头，multipart 处理文件上传
 axum = { version = "0.7", features = [ "multipart"] } # 基于 tokio 的 Web 框架
@@ -14,8 +12,6 @@ tokio = { version = "1", features = ["full"] } # 异步运行时
 # Tower HTTP 中间件依赖
 tower = { version = "0.4", features = ["limit"] } # 中间件支持
 tower-http = { version = "0.5", features = ["full"] } # HTTP 中间件支持
-# Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
-sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
 # 序列化与反序列化依赖
 serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 serde_json = "1.0"# JSON 序列化与反序列化
@@ -23,10 +19,6 @@ serde_json = "1.0"# JSON 序列化与反序列化
 uuid = { version = "1.6", features = ["v4", "fast-rng", "macro-diagnostics"] } # uuid依赖库
 # 监听 Ctrl+C 退出应用
 ctrlc = "3.4" # ctrl+c 退出应用
-# 声明惰性加载的静态数据
-lazy_static = { version = "1.4", features = [] } # 全局静态变量
-# Redis 数据库连接池
-deadpool-redis = { version = "0.13", features = ["serde"] }
 # 文本模板工具库
 askama = { version = "0.12", features = ["serde"] }
 # 日期时间处理
@@ -41,3 +33,5 @@ libtracing = { path = "../libtracing" } # 日志处理
 libglobal_request_id = { path = "../libglobal_request_id" } # 日志处理
 # 读写配置文件
 libconfig = { path = "../libconfig" } # 读取配置文件内容
+# 数据库连接池（MySQL、Redis）
+libdatabase = { path = "../libdatabase" } # 数据库访问

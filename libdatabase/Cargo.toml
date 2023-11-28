@@ -1,0 +1,16 @@
+[package]
+name = "libdatabase"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
+sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
+# 序列化与反序列化依赖
+serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
+# Redis 数据库连接池
+deadpool-redis = { version = "0.13", features = ["serde"] }
+# 日志处理（Tracing框架）
+libtracing = { path = "../libtracing" } # 日志处理
