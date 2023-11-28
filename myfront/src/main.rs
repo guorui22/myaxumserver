@@ -15,14 +15,14 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
-use libglobal_request_id::MyMakeRequestId;
+use libconfig::init_server_config;
 
-use libtracing::{get_my_format, Level, tracing_subscriber};
+use libglobal_request_id::MyMakeRequestId;
+use libtracing::{get_my_format, info, Level, tracing_subscriber};
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
 use myfront::database::{init_mysql_conn_pool, init_redis_conn_pool, MySQL01, MySQLPool, Redis01, RedisPool};
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
-use myfront::main_util::{init_server_config, watch_ctrl_c_to_exit};
 #[cfg(not(debug_assertions))]
 use myfront::my_tracing::get_my_file_writer;
 #[cfg(not(debug_assertions))]
@@ -30,8 +30,17 @@ use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
-    // 监听 ctrl+c 信号退出应用
-    watch_ctrl_c_to_exit();
+
+    // 如果监听到 ctrl+c 信号就退出应用
+    ctrlc::set_handler(|| {
+        info!("监听到 CTRL + C 操作, 退出应用程序.");
+        std::process::exit(0);
+    }).unwrap_or_else(|err| {
+        panic!(
+            "{}",
+            err.to_string()
+        )
+    });
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;

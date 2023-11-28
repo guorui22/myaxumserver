@@ -6,4 +6,5 @@ members = [
     "liberror",
     "libtracing",
     "libglobal_request_id",
+    "libconfig",
 ]
