@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package category;
+
+// Java 代码生成配置
+option java_multiple_files = true;
+option java_package = "com.sunnercn.zycrm.grpc.category";
+option java_outer_classname = "CategoryProto";
+
+// 分类
+message Category {
+  int32 id = 1;
+  string name = 2;
+  bool is_del = 3;
+}
+
+// --- 创建分类（请求消息、响应消息）
+message CreateCategoryRequest { string name = 1; }
+message CreateCategoryReply { int32 id = 1; }
+
+// -- 修改分类（请求消息、响应消息）
+message EditCategoryRequest {
+  int32 id = 1;
+  string name = 2;
+}
+message EditCategoryReply {
+  int32 id = 1;
+  bool ok = 2;
+}
+
+// -- 分类列表（请求消息、响应消息）
+message ListCategoryRequest {
+  optional string name = 1; // 根据分类名称查找
+  optional bool is_del = 2; // 是否删除
+}
+message ListCategoryReply { repeated Category categories = 1; }
+
+// -- 删除/恢复分类（请求消息、响应消息）
+message ToggleCategoryRequest { int32 id = 1; }
+message ToggleCategoryReply {
+  int32 id = 1;
+  bool is_del = 2;
+}
+
+// -- 分类是否存在（请求消息、响应消息）
+// -- 如果消息包含多个字段，但是最多只能同时设置一个字段时可以使用oneof功能
+message CategoryExistsRequest {
+  oneof condition {
+    string name = 1;
+    int32 id = 2;
+  }
+}
+message CategoryExistsReply { bool exists = 1; }
+
+// -- 分类详情（请求消息、响应消息）
+message GetCategoryRequest {
+  int32 id = 1;
+  optional bool is_del = 2;
+}
+message GetCategoryReply { optional Category category = 1; }
+
+// -- 在“分类”上定义rpc服务接口
+service CategoryService {
+  // 创建分类
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryReply);
+  // 修改分类
+  rpc EditCategory(EditCategoryRequest) returns (EditCategoryReply);
+  // 分类列表
+  rpc ListCategory(ListCategoryRequest) returns (ListCategoryReply);
+  // 删除/恢复分类
+  rpc ToggleCategory(ToggleCategoryRequest) returns (ToggleCategoryReply);
+  // 分类是否存在
+  rpc CategoryExists(CategoryExistsRequest) returns (CategoryExistsReply);
+  // 获取分类详情
+  rpc GetCategory(GetCategoryRequest) returns (GetCategoryReply);
+}

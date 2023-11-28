@@ -8,4 +8,5 @@ members = [
     "libglobal_request_id",
     "libconfig",
     "libdatabase",
+    "libproto",
 ]
