@@ -39,3 +39,5 @@ libauth = { path = "../libauth" } # 用户认证相关
 liberror = { path = "../liberror" } # 自定义错误类型
 # 日志处理（Tracing框架）
 libtracing = { path = "../libtracing" } # 日志处理
+# 全局唯一请求ID（用于日志追踪）
+libglobal_request_id = { path = "../libglobal_request_id" } # 日志处理

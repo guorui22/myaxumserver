@@ -15,16 +15,16 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+use libglobal_request_id::MyMakeRequestId;
 
 use libtracing::{get_my_format, Level, tracing_subscriber};
+#[cfg(debug_assertions)]
+use libtracing::get_my_stdout_writer;
 use myfront::database::{init_mysql_conn_pool, init_redis_conn_pool, MySQL01, MySQLPool, Redis01, RedisPool};
-use myfront::global_request_id::MyMakeRequestId;
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
 use myfront::main_util::{init_server_config, watch_ctrl_c_to_exit};
 #[cfg(not(debug_assertions))]
 use myfront::my_tracing::get_my_file_writer;
-#[cfg(debug_assertions)]
-use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 

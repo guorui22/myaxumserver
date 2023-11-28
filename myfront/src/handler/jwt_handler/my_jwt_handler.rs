@@ -4,9 +4,9 @@ use axum_macros::debug_handler;
 use serde_json::json;
 
 use libauth::{AuthError, Claims, get_auth_user, JWT, TOKEN_EXP};
+use libglobal_request_id::get_request_id;
 use libtracing::info;
 
-use crate::global_request_id::get_request_id;
 use crate::handler::AuthInfo;
 
 /// 使用用户名&密码获取 JWT Token

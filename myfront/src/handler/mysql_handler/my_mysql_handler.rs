@@ -4,10 +4,10 @@ use axum_macros::debug_handler;
 use sea_orm::{ConnectionTrait, DatabaseBackend, FromQueryResult, TransactionTrait};
 use serde_json::json;
 
+use libglobal_request_id::get_request_id;
 use libtracing::info;
 
 use crate::database::{DbBatchQueryArgs, MySQL01, MySQLPool};
-use crate::global_request_id::get_request_id;
 
 /// mysql 批量查询
 #[debug_handler]

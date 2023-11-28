@@ -5,4 +5,5 @@ members = [
     "libauth",
     "liberror",
     "libtracing",
+    "libglobal_request_id",
 ]
