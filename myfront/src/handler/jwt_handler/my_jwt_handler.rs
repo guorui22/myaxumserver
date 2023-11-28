@@ -2,9 +2,9 @@ use axum::http::HeaderMap;
 use axum::Json;
 use axum_macros::debug_handler;
 use serde_json::json;
-use tracing::info;
 
 use libauth::{AuthError, Claims, get_auth_user, JWT, TOKEN_EXP};
+use libtracing::info;
 
 use crate::global_request_id::get_request_id;
 use crate::handler::AuthInfo;

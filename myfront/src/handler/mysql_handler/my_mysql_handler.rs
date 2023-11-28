@@ -3,7 +3,8 @@ use axum::http::HeaderMap;
 use axum_macros::debug_handler;
 use sea_orm::{ConnectionTrait, DatabaseBackend, FromQueryResult, TransactionTrait};
 use serde_json::json;
-use tracing::info;
+
+use libtracing::info;
 
 use crate::database::{DbBatchQueryArgs, MySQL01, MySQLPool};
 use crate::global_request_id::get_request_id;

@@ -1,7 +1,15 @@
+// debug模式下，日志输出到标准输出
+#[cfg(debug_assertions)]
+use std::io::Stdout;
+#[cfg(not(debug_assertions))]
+use std::path::Path;
+
 use chrono::Local;
+// release模式下，日志输出到文件
+#[cfg(not(debug_assertions))]
+use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use tracing_subscriber::fmt::format::{Format, Full, Writer};
 use tracing_subscriber::fmt::time::FormatTime;
-use crate::tracing::my_tracing;
 
 /// 用来自定义日志中的时间格式
 /// 类似 2023-11-17 09:48:50.616722293 +08:00 格式
@@ -29,22 +37,13 @@ pub fn get_my_format() -> Format<Full, LocalTimer> {
             false,
         )
         .with_line_number(true)
-        .with_timer(my_tracing::LocalTimer)
+        .with_timer(LocalTimer)
 }
 
-// debug模式下，日志输出到标准输出
-#[cfg(debug_assertions)]
-use std::io::Stdout;
 #[cfg(debug_assertions)]
 pub fn get_my_stdout_writer() -> fn() -> Stdout {
     std::io::stdout
 }
-
-// release模式下，日志输出到文件
-#[cfg(not(debug_assertions))]
-use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
-#[cfg(not(debug_assertions))]
-use std::path::Path;
 
 #[cfg(not(debug_assertions))]
 pub fn get_my_file_writer(

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::marker::PhantomData;
 
 use deadpool_redis::{Config, Connection, Pool, Runtime};
-use tracing::error;
+use libtracing::error;
 
 /// 自定义数据库连接池类型 Redis01
 #[derive(Clone, Debug)]

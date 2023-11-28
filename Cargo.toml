@@ -3,4 +3,6 @@ resolver = "2" # resolver字段用于配置依赖项解析器的版本，这里�
 members = [
     "myfront",
     "libauth",
+    "liberror",
+    "libtracing",
 ]

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use config::Config;
-use tracing::info;
+use libtracing::info;
 
 /// 读取服务器配置文件参数信息
 pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, String> {
