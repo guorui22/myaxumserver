@@ -6,7 +6,7 @@ use axum_macros::debug_handler;
 use chrono::offset::Local;
 use serde_json::json;
 
-use libdatabase::{DbBatchQueryArgs, GrMySQLPool, sqlx, TestMySqlDb01};
+use libdatabase::{DbBatchQueryArgs, get_mysql_column_value, GrMySQLPool, sqlx, TestMySqlDb01};
 use libdatabase::sqlx::{Column, Row, TypeInfo};
 use libdatabase::sqlx::types::JsonValue;
 use libglobal_request_id::get_request_id;
@@ -38,70 +38,6 @@ pub async fn mysql_query(
             //列值集合
             let mut vec_row_columns_values = vec![];
             for current_column in current_row.columns() {
-                macro_rules! get_mysql_column_value {
-                    ($row:ident, $col:ident) => {
-                        match $col.type_info().name() {
-                            "VARBINARY" | "BINARY" | "BLOB" => {
-                                $row.try_get::<Vec<u8>, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "VARCHAR" | "CHAR" | "TEXT" => {
-                                $row.try_get::<String, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "DOUBLE" => {
-                                $row.try_get::<f64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "FLOAT" => {
-                                $row.try_get::<f32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "BIGINT UNSIGNED" => {
-                                $row.try_get::<u64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "INT UNSIGNED" => {
-                                $row.try_get::<u32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "SMALLINT UNSIGNED" => {
-                                $row.try_get::<u16, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "TINYINT UNSIGNED" => {
-                                $row.try_get::<u8, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "BIGINT" => {
-                                $row.try_get::<i64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "INT" => {
-                                $row.try_get::<i32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "SMALLINT" => {
-                                $row.try_get::<i16, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "TINYINT" => {
-                                $row.try_get::<i8, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "TINYINT(1)" | "BOOLEAN" | "BOOL" => {
-                                $row.try_get::<bool, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "TIMESTAMP" => {
-                                $row.try_get::<chrono::DateTime<Local>, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "DATETIME" => {
-                                $row.try_get::<chrono::NaiveDateTime, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "DATE" => {
-                                $row.try_get::<chrono::NaiveDate, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "TIME" => {
-                                $row.try_get::<chrono::NaiveTime, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "DECIMAL" => {
-                                $row.try_get::<bigdecimal::BigDecimal, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            "JSON" => {
-                                $row.try_get::<serde_json::Value, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-                            }
-                            _ => panic!("Unsupported type"),
-                        }
-                    };
-                }
                 let current_column_value = get_mysql_column_value!(current_row, current_column);
                 vec_row_columns_values.push(current_column_value);
             }
