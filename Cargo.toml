@@ -9,4 +9,5 @@ members = [
     "libconfig",
     "libdatabase",
     "libproto",
+    "libgrpc",
 ]

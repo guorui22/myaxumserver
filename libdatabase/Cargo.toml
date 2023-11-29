@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 # Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
 sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
+# 异步 SQL 工具包
+sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "mysql", "bigdecimal" ] }
 # 序列化与反序列化依赖
 serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 # Redis 数据库连接池

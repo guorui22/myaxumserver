@@ -15,8 +15,7 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
 use libconfig::init_server_config;
-use libdatabase::{init_mysql_conn_pool, init_redis_conn_pool, MySQL01, MySQLPool, Pool, Redis01, RedisPool};
-use libdatabase::sea_orm::DatabaseConnection;
+use libdatabase::{init_mysql_conn_pool, init_redis_conn_pool, TestMySqlDb01, GrMySQLPool, Pool, Redis01, RedisPool};
 use libglobal_request_id::MyMakeRequestId;
 use libtracing::{get_my_format, info, Level, tracing_subscriber};
 #[cfg(debug_assertions)]
@@ -86,7 +85,7 @@ async fn main() -> Result<(), String> {
         .get("MYSQL_01")
         .ok_or(format!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
-    let mysql_01_pool: DatabaseConnection = init_mysql_conn_pool("MYSQL_01", ini_mysql_01).await?;
+    let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> = init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
@@ -137,7 +136,7 @@ async fn main() -> Result<(), String> {
                 // 限制请求体大小为 100MB
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))
                 // 共享MySQL01数据库连接池
-                .layer(Extension(MySQLPool::<MySQL01>::new(mysql_01_pool)))
+                .layer(Extension(test_mysql_db_01_pool))
                 // 共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
                 // 共享文件上传路径

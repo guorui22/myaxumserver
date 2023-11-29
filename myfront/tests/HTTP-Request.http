@@ -38,7 +38,7 @@ Accept: application/json, text/plain, */*
 GET http://127.0.0.1:5000/get_protected_content
 Content-Type: application/json; charset=utf-8
 Accept: application/json, text/plain, */*
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3MzMiLCJuYW1lIjoi6YOt552_IiwiaXNzIjoi5Zyj5Yac6ZuG5ZuiIiwiZXhwIjoxNzAxMDgzMTgxfQ.4xbdQlUt7-1tNmtSiwaQZo0dahr5c6rSpYdOphgy_lI
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3MzMiLCJuYW1lIjoi6YOt552_IiwiaXNzIjoi5Zyj5Yac6ZuG5ZuiIiwiZXhwIjoxNzAxMjU5NjkyfQ.qc0heoH6C8CRaIbMxvpZ3uL8lDsjjK1vkKEYEi7EKKs
 
 
 

@@ -21,3 +21,5 @@ axum = { version = "0.7.1", features = ["multipart"] }
 axum-extra = { version = "0.9.0", features = ["typed-header"] }
 # 自定义错误类型
 thiserror = "1.0.50"
+# 字符串加密与校验
+bcrypt= "0.15"

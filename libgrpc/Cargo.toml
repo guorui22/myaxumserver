@@ -1,0 +1,15 @@
+[package]
+name = "libgrpc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = {version = "1", features = ["full"]}
+prost = "0.12.1"
+prost-types = "0.12.1"
+tonic = "0.10.2"
+sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "mysql" ] }
+libauth = {path = "../libauth"}
+libproto = {path = "../libproto"}
