@@ -22,9 +22,9 @@ use libtracing::{get_my_format, info, Level, tracing_subscriber};
 use libtracing::get_my_stdout_writer;
 use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
 #[cfg(not(debug_assertions))]
-use myfront::my_tracing::get_my_file_writer;
+use libtracing::get_my_file_writer;
 #[cfg(not(debug_assertions))]
-use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 
 #[tokio::main]
 async fn main() -> Result<(), String> {

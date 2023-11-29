@@ -7,3 +7,4 @@ pub use tracing::error;
 pub use tracing_subscriber::fmt::format::{Format, Full, Writer};
 pub use tracing_subscriber::fmt::time::FormatTime;
 pub use tracing_subscriber;
+pub use tracing_appender;
