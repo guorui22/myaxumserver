@@ -38,7 +38,7 @@ pub async fn mysql_query(
             //列值集合
             let mut vec_row_columns_values = vec![];
             for current_column in current_row.columns() {
-                macro_rules! get_mysql_type {
+                macro_rules! get_mysql_column_value {
                     ($row:ident, $col:ident) => {
                         match $col.type_info().name() {
                             "VARBINARY" | "BINARY" | "BLOB" => {
@@ -102,7 +102,7 @@ pub async fn mysql_query(
                         }
                     };
                 }
-                let current_column_value = get_mysql_type!(current_row, current_column);
+                let current_column_value = get_mysql_column_value!(current_row, current_column);
                 vec_row_columns_values.push(current_column_value);
             }
             let current_row_hashmap: HashMap<String, JsonValue> = vec_row_columns_names.into_iter().zip(vec_row_columns_values.into_iter()).collect();
