@@ -45,7 +45,7 @@ async fn test_get_category() {
     let reply = client.get_category(request).await.unwrap();
     let reply = reply.into_inner();
     assert!(reply.category.is_some());
-    assert!(reply.category.unwrap().id == 1);
+    assert_eq!(reply.category.unwrap().id, 1);
 }
 #[tokio::test]
 async fn test_get_notexists_category() {
@@ -71,8 +71,8 @@ async fn test_delete_category() {
     let request = tonic::Request::new(ToggleCategoryRequest { id: 1 });
     let reply = client.toggle_category(request).await.unwrap();
     let reply = reply.into_inner();
-    assert!(reply.id == 1);
-    assert!(reply.is_del == !reply_old.category.unwrap().is_del);
+    assert_eq!(reply.id, 1);
+    assert_eq!(reply.is_del, !reply_old.category.unwrap().is_del);
 }
 #[tokio::test]
 async fn test_undelete_category() {
@@ -86,8 +86,8 @@ async fn test_undelete_category() {
     let request = tonic::Request::new(ToggleCategoryRequest { id: 1 });
     let reply = client.toggle_category(request).await.unwrap();
     let reply = reply.into_inner();
-    assert!(reply.id == 1);
-    assert!(reply.is_del == !reply_old.category.unwrap().is_del);
+    assert_eq!(reply.id, 1);
+    assert_eq!(reply.is_del, !reply_old.category.unwrap().is_del);
 }
 
 #[tokio::test]
