@@ -1,22 +1,22 @@
 use std::sync::Arc;
 
-use sqlx::{MySql, MySqlPool, Pool, Row};
+use sqlx::{MySqlPool, Row};
 
+use libauth::password;
 use libproto::{
     admin_service_server::AdminService, AdminExistsReply, AdminExistsRequest, CreateAdminReply,
     CreateAdminRequest, EditAdminReply, EditAdminRequest, GetAdminReply, GetAdminRequest,
     ListAdminReply, ListAdminRequest, ToggleAdminReply, ToggleAdminRequest,
 };
-use libauth::password;
 
 pub struct Admin {
     pub pool: Arc<MySqlPool>,
 }
 
 impl Admin {
-    pub fn new(pool: Pool<MySql>) -> Self {
+    pub fn new(pool: Arc<MySqlPool>) -> Self {
         Self {
-            pool: Arc::new(pool),
+            pool,
         }
     }
 }
