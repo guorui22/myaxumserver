@@ -19,9 +19,9 @@ pub fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {
     }
 }
 
-/// 宏定义：初始化管理员服务客户端
+/// 宏定义：初始化 grpc 客户端
 #[macro_export]
-macro_rules! get_admin_client {
+macro_rules! get_grpc_client {
     ($client: ty, $address: ident, $token: ident) => {
         <$client>::with_interceptor(Channel::from_static($address).connect().await.unwrap(), |mut req: Request<()>|{
             let token: MetadataValue<_> = $token.parse().unwrap();

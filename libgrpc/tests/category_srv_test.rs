@@ -1,4 +1,4 @@
-use libgrpc::{generate_random_string, get_admin_client};
+use libgrpc::{generate_random_string, get_grpc_client};
 use tonic::Request;
 use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
@@ -15,7 +15,7 @@ const TEST_JWT: &'static str = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJj
 
 #[tokio::test]
 async fn test_create_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(CreateCategoryRequest {
         name: format!("分类-{}", generate_random_string(5)),
     });
@@ -25,7 +25,7 @@ async fn test_create_category() {
 }
 #[tokio::test]
 async fn test_edit_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(EditCategoryRequest {
         id: 1,
         name: "axum.rs".into(),
@@ -37,7 +37,7 @@ async fn test_edit_category() {
 }
 #[tokio::test]
 async fn test_get_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(GetCategoryRequest {
         id: 1,
         is_del: None,
@@ -49,7 +49,7 @@ async fn test_get_category() {
 }
 #[tokio::test]
 async fn test_get_notexists_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(GetCategoryRequest {
         id: 100,
         is_del: Some(true),
@@ -61,7 +61,7 @@ async fn test_get_notexists_category() {
 
 #[tokio::test]
 async fn test_delete_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(GetCategoryRequest {
         id: 1,
         is_del: None,
@@ -76,7 +76,7 @@ async fn test_delete_category() {
 }
 #[tokio::test]
 async fn test_undelete_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(GetCategoryRequest {
         id: 1,
         is_del: None,
@@ -92,7 +92,7 @@ async fn test_undelete_category() {
 
 #[tokio::test]
 async fn test_delete_notexists_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(ToggleCategoryRequest { id: 100 });
     let reply = client.toggle_category(request).await;
     assert!(reply.is_err());
@@ -100,7 +100,7 @@ async fn test_delete_notexists_category() {
 
 #[tokio::test]
 async fn test_list_category() {
-    let mut client = get_admin_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let mut client = get_grpc_client!(CategoryServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let request = tonic::Request::new(ListCategoryRequest {
         name: Some("小说".to_string()),
         is_del: Some(false),

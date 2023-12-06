@@ -10,4 +10,15 @@ members = [
     "libdatabase",
     "libproto",
     "libgrpc",
+    "libwasm",
 ]
+
+[profile.release.package.libwasm]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "z"
+codegen-units = 1
