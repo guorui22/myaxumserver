@@ -4,7 +4,9 @@ use axum::{
     http::header::CONTENT_TYPE,
     response::{IntoResponse, Response},
 };
-use futures::{future::BoxFuture, ready, TryFutureExt};
+#[allow(unused_imports)]
+use futures::{ready, TryFutureExt};
+use futures::future::BoxFuture;
 use std::{
     convert::Infallible,
     task::{Context, Poll},
