@@ -12,6 +12,7 @@ members = [
     "libgrpc",
     "libwasm",
     "libhybrid",
+    "metaforge",
 ]
 
 [profile.release.package.libwasm]
