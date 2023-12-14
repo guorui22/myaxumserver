@@ -72,7 +72,7 @@ fn to_image(width: u32, height: u32, vec: Vec<u8>) -> DynamicImage {
 }
 
 fn to_canvas_image(width: u32, height: u32, vec: Vec<u8>) -> ImageData {
-    ImageData::new_with_u8_clamped_array_and_sh(Clamped(&mut vec.clone()), width, height).unwrap()
+    ImageData::new_with_u8_clamped_array_and_sh(Clamped(&vec.clone()), width, height).unwrap()
 }
 
 #[wasm_bindgen]

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/myauth/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/myfront/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/myfront/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libauth/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/liberror/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libconfig/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libdatabase/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libglobal_request_id/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libgrpc/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libproto/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libtracing/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libgrpc/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/libwasm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libwasm/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/libhybrid/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/metaforge/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/metaforge/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
