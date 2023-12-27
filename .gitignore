@@ -1,3 +1,6 @@
 /target
 /Cargo.lock
-/.idea/misc.xml
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/myaxumserver.iml
+/.idea/vcs.xml
