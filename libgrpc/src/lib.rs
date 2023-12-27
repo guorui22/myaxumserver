@@ -1,6 +1,7 @@
 mod admin_server;
 mod category_server;
 mod topic_server;
+mod calculator_server;
 
 use rand::Rng;
 use tonic::metadata::MetadataValue;
@@ -8,6 +9,7 @@ use tonic::{Request, Status};
 pub use admin_server::*;
 pub use category_server::*;
 pub use topic_server::*;
+pub use calculator_server::*;
 
 /// 检查请求头中的 token 是否正确
 pub fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {

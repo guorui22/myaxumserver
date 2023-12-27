@@ -18,6 +18,8 @@ chrono = "0.4"   # for date and time
 libauth = {path = "../libauth"}
 # proto 模块
 libproto = {path = "../libproto"}
+# grpc stream 服务依赖
+tokio-stream = {version = "0.1", features = []}
 
 [dev-dependencies]
 rand = "0.8"
