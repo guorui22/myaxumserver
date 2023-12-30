@@ -118,6 +118,7 @@ pub mod calculator_service_client {
                 .insert(GrpcMethod::new("calculator.CalculatorService", "findSquare"));
             self.inner.unary(req, path, codec).await
         }
+        /// server stream
         pub async fn find_factors(
             &mut self,
             request: impl tonic::IntoRequest<super::Input>,
@@ -163,6 +164,7 @@ pub mod calculator_service_server {
             >
             + Send
             + 'static;
+        /// server stream
         async fn find_factors(
             &self,
             request: tonic::Request<super::Input>,
