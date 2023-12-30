@@ -18,6 +18,7 @@ service CalculatorService {
   // unary
   rpc findSquare(Input) returns (Output);
 
+  // server stream
   rpc findFactors(Input) returns (stream Output);
 
 }
