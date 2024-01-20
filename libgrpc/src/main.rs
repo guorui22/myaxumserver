@@ -25,7 +25,8 @@ async fn main() {
         // .add_service(AdminServiceServer::with_interceptor(admin_srv, libgrpc::check_auth))
         // .add_service(CategoryServiceServer::with_interceptor(category_srv,libgrpc::check_auth))
         // .add_service(TopicServiceServer::with_interceptor(topic_srv, libgrpc::check_auth))
-        .add_service(CalculatorServiceServer::new(calculater_srv))
+        .add_service(CalculatorServiceServer::with_interceptor(calculater_srv, libgrpc::check_auth))
+        // .add_service(CalculatorServiceServer::new(calculater_srv))
         .serve(addr.parse().unwrap())
         .await
         .unwrap();
