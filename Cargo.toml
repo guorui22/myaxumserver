@@ -2,6 +2,7 @@
 resolver = "2" # resolver字段用于配置依赖项解析器的版本，这里使用2版本
 members = [
     "myfront",
+    "myfront/my_default_macro_derive",
     "libauth",
     "liberror",
     "libtracing",

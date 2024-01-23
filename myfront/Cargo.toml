@@ -38,7 +38,10 @@ libdatabase = { path = "../libdatabase" } # 数据库访问
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)
 bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
 
+my_default_macro_derive = { path = "./my_default_macro_derive" }
+
 [dev-dependencies]
 rust_decimal = "1.33.1"
 rust_decimal_macros = "1.33.1"
 lazy_static = "1.4.0"
+#my_default_macro_derive = { path = "../my_default_macro_derive" }

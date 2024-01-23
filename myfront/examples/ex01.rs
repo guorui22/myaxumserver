@@ -1,24 +1,19 @@
-use std::sync::Arc;
-use std::time::Duration;
-use tokio::sync::Semaphore;
-use tokio::time::sleep;
+use my_default_macro_derive::MyDefault;
 
-#[tokio::main]
-async fn main() {
-    let semaphore = Arc::new(Semaphore::new(3));
-    let mut join_handles = Vec::new();
-
-    for idx in 0..50 {
-        let permit = semaphore.clone().acquire_owned().await.unwrap();
-        join_handles.push(tokio::spawn(async move {
-            //// 在这里执行任务...
-            println!("idx={}", idx);
-            sleep(Duration::from_secs(1)).await;
-            drop(permit);
-        }));
-    }
-
-    for handle in join_handles {
-        handle.await.unwrap();
-    }
+fn main() {
+    println!("hello {:?}", User1::default());
+    println!("hello {:?}", User2::default());
+    println!("hello {:?}", User3::default());
 }
+
+#[derive(Debug, MyDefault)]
+struct User1 {
+    age: u8,
+    name: String,
+}
+
+#[derive(Debug, MyDefault)]
+struct User2(u8, String);
+
+#[derive(Debug, MyDefault)]
+struct User3;
