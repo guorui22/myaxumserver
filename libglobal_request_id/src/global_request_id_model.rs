@@ -4,5 +4,5 @@ use axum::http::HeaderMap;
 pub fn get_request_id(headers: &HeaderMap) -> String {
     headers
         .get("x-request-id")
-        .map_or("".to_string(), |x| x.to_str().unwrap().to_string())
+        .map_or_else(||"None".to_string(), |x| x.to_str().map_or_else(|e| e.to_string(), |x| x.to_string()))
 }
