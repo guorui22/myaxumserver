@@ -1,22 +1,17 @@
-use rand::{thread_rng, Rng};
+use axum::{routing::get, Router, middleware};
+use myfront::middleware::print_middle_ware;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-enum Tile {
-    Empty,
-}
+#[tokio::main]
+async fn main() -> Result<(), String> {
+    // 创建请求到服务之间的路由 router
+    let router = Router::new()
+        .route("/", get(|| async { "Hello, World! 01" }))
+        .route("/h", get(|| async { "Hello, World! 02" }).layer(middleware::from_fn(print_middle_ware)));
 
-fn random_empty_tile(arr: &mut [Tile]) -> &mut Tile {
-    loop {
-        let i = thread_rng().gen_range(0..arr.len());
-        let tile = &mut arr[i];
-        if Tile::Empty == *tile{
-            return &mut arr[i];
-        }
-    }
-}
-
-fn main() {
-    let mut arr = [Tile::Empty; 10];
-    let tile = random_empty_tile(&mut arr);
-    println!("{:?}", tile);
+    // 启动应用监听本地 3000 端口
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3300").await.unwrap();
+    axum::serve(listener, router).await.map_err(|err| {
+        format!("服务启动失败：{:?}", err)
+    })?;
+    Ok(())
 }

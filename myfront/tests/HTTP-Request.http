@@ -54,3 +54,8 @@ height=10 &
 width=10 &
 my_var={"wxapp_id":10001,"group_id":0}
 
+### middleware 中间件测试
+GET http://127.0.0.1:3300/h
+Content-Type: application/json; charset=utf-8
+Accept: application/json, text/plain, */*
+
