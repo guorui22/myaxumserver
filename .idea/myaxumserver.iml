@@ -23,6 +23,8 @@
       <sourceFolder url="file://$MODULE_DIR$/myfront/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/myfront/my_default_macro_derive/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/myrspc/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/arpy-axum-common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/arpy-axum-server/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/myfront/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
