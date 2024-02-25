@@ -2,8 +2,8 @@ use tonic::transport::Channel;
 use tonic::metadata::MetadataValue;
 use tonic::Request;
 use libgrpc::get_grpc_client;
-use libproto::Input;
-use libproto::calculator_service_client::CalculatorServiceClient;
+use libproto::{LoginRequest};
+use libproto::login_service_client::LoginServiceClient;
 
 /// 服务器地址
 const TEST_ADDRESS: &'static str = "http://172.17.0.1:29029";
@@ -15,14 +15,14 @@ const TEST_JWT: &'static str = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJj
 
 /// 访问无 JWT 认证 grpc 服务
 #[tokio::test]
-async fn test_find_square() {
-    let mut client = get_grpc_client!(CalculatorServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
-    // let mut client = CalculatorServiceClient::connect(TEST_ADDRESS).await.unwrap();
-    let request = tonic::Request::new(Input {
-        number: 9,
+async fn test_do_login() {
+    let mut client = get_grpc_client!(LoginServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
+    let request = tonic::Request::new(LoginRequest {
+        usercode: "admin".to_string(),
+        password: "admin".to_string(),
     });
-    let resp = client.find_square(request).await.unwrap();
+    let resp = client.do_login(request).await.unwrap();
     let reply = resp.into_inner();
     dbg!(&reply);
-    assert!(reply.result > 0);
+    assert!(reply.username.unwrap().len() > 0);
 }
