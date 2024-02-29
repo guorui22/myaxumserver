@@ -17,6 +17,9 @@ use tower_http::trace::TraceLayer;
 use libconfig::init_server_config;
 use libdatabase::{init_mysql_conn_pool, init_redis_conn_pool, TestMySqlDb01, GrMySQLPool, Pool, Redis01, RedisPool};
 use libglobal_request_id::MyMakeRequestId;
+use libgrpc::{Calculator, Login};
+use libproto::calculator_service_server::CalculatorServiceServer;
+use libproto::login_service_server::LoginServiceServer;
 use libtracing::{get_my_format, info, Level, tracing_subscriber};
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
@@ -162,6 +165,21 @@ async fn main() -> Result<(), String> {
     let host = ini_main.get("MN_SERVER_HOST").map_or("127.0.0.1", |h| h);
     let port = ini_main.get("MN_SERVER_PORT").map_or("5000", |p| p);
 
+
+    // 启动 grpc 服务
+    let addr = "0.0.0.0:29029";
+    println!("grpc-srv run at: {}", addr);
+    let calculater_srv = Calculator;
+    let login_srv = Login;
+    tonic::transport::Server::builder()
+        .add_service(CalculatorServiceServer::with_interceptor(calculater_srv, libgrpc::check_auth))
+        .add_service(LoginServiceServer::with_interceptor(login_srv, libgrpc::check_auth))
+        .serve(addr.parse().unwrap())
+        .await.map_err(|err| {
+        format!("服务启动失败：{:?}", err)
+    })?;
+
+    // 启动 http 服务
     let listener = tokio::net::TcpListener::bind(&format!("{host}:{port}")).await.unwrap();
     axum::serve(listener, router).await.map_err(|err| {
         format!("服务启动失败：{:?}", err)
