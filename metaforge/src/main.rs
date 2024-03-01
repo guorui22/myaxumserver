@@ -45,7 +45,9 @@ async fn main() -> Result<(), String> {
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
-    let ini_main: &HashMap<String, String> = ini.get("MAIN").ok_or("MAIN section not found".to_string())?;
+    dbg!(&ini);
+
+    let ini_main: &HashMap<String, String> = ini.get("main").ok_or("MAIN section not found".to_string())?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
@@ -65,7 +67,7 @@ async fn main() -> Result<(), String> {
         let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
 
     // 初始化：设置日志等级、日志输出位置、日志格式(定制和筛选日志)
-    let ini_log_level = ini_main.get("MN_LOG_LEVEL").map(|s| s.to_uppercase());
+    let ini_log_level = ini_main.get("mn_log_level").map(|s| s.to_uppercase());
     let my_log_level = match ini_log_level {
         Some(s) => match s.as_str() {
             "TRACE" => Level::TRACE,
@@ -85,14 +87,14 @@ async fn main() -> Result<(), String> {
 
     // 获取配置文件中的 MYSQL_01 配置信息
     let ini_mysql_01 = ini
-        .get("MYSQL_01")
+        .get("mysql_01")
         .ok_or(format!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
     let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> = init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
-        .get("REDIS_01")
+        .get("redis_01")
         .ok_or("REDIS_01 section not found".to_string())?;
     // 初始化 REDIS_01 数据库连接池
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
@@ -143,7 +145,7 @@ async fn main() -> Result<(), String> {
                 // 共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
                 // 共享文件上传路径
-                .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
+                .layer(Extension(UploadPath { upload_path: ini_main.get("mn_upload_path").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
                 // 启用数据压缩
                 .layer(CompressionLayer::new())
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
@@ -162,8 +164,8 @@ async fn main() -> Result<(), String> {
                         .allow_origin(Any),
                 )
         );
-    let host = ini_main.get("MN_SERVER_HOST").map_or("127.0.0.1", |h| h);
-    let port = ini_main.get("MN_SERVER_PORT").map_or("5000", |p| p);
+    let host = ini_main.get("mn_server_host").map_or("127.0.0.1", |h| h);
+    let port = ini_main.get("mn_server_port").map_or("5000", |p| p);
 
 
     // 启动 grpc 服务

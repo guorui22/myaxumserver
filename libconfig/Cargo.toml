@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 # 配置文件读取
-config = "0.13" # 配置文件读取
+config = "0.14" # 配置文件读取
