@@ -48,11 +48,11 @@ pub async fn init_mysql_conn_pool<T>(
         .connect(
             format!(
                 "mysql://{}:{}@{}:{}/{}",
-                param_map.get("MY_USER").unwrap_or(def_val),
-                param_map.get("MY_PWD").unwrap_or(def_val),
-                param_map.get("MY_HOST").unwrap_or(def_val),
-                param_map.get("MY_PORT").unwrap_or(def_val),
-                param_map.get("MY_DB_NAME").unwrap_or(def_val),
+                param_map.get("my_user").unwrap_or(def_val),
+                param_map.get("my_pwd").unwrap_or(def_val),
+                param_map.get("my_host").unwrap_or(def_val),
+                param_map.get("my_port").unwrap_or(def_val),
+                param_map.get("my_db_name").unwrap_or(def_val),
             ).as_str()
         )
         .await

@@ -20,7 +20,7 @@ use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
-use libtracing::{get_my_format, info, Level, tracing_subscriber};
+use libtracing::{get_my_format, info, Level, trace, tracing_subscriber};
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
 use metaforge::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
@@ -45,18 +45,17 @@ async fn main() -> Result<(), String> {
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
-    dbg!(&ini);
 
     let ini_main: &HashMap<String, String> = ini.get("main").ok_or("MAIN section not found".to_string())?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_path = ini_main
-        .get("MN_LOG_PATH")
+        .get("mn_log_path")
         .ok_or("MN_LOG_PATH not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_name = ini_main
-        .get("MN_LOG_NAME")
+        .get("mn_log_name")
         .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
@@ -170,7 +169,7 @@ async fn main() -> Result<(), String> {
 
     // 启动 grpc 服务
     let addr = "0.0.0.0:29029";
-    println!("grpc-srv run at: {}", addr);
+    info!("grpc-srv run at: {}", addr);
     let calculater_srv = Calculator;
     let login_srv = Login;
     tonic::transport::Server::builder()
