@@ -20,6 +20,7 @@ use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
+#[allow(unused_imports)]
 use libtracing::{get_my_format, info, Level, trace, tracing_subscriber};
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
