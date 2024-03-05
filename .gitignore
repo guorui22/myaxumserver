@@ -4,3 +4,5 @@
 /.idea/modules.xml
 /.idea/myaxumserver.iml
 /.idea/vcs.xml
+/metaforge/www/static/
+/metaforge/www/index.html
