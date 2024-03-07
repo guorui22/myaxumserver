@@ -101,9 +101,7 @@ async fn main() -> Result<(), String> {
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
 
     // 创建请求到服务之间的路由 router
-    let x_request_id = HeaderName::from_static("x-request-id");
-
-    // 启动应用监听本地 5000 端口
+    let x_request_id = HeaderName::from_static("x-request-id"); // 全局请求 ID 的请求头名称
     let router = Router::new()
         .nest_service(
             "/",
@@ -117,11 +115,11 @@ async fn main() -> Result<(), String> {
         // .nest_service(
         .route("/index", get(index))
         // mysql数据库批量查询
-        .route("/mysql_qry", post(mysql_query))
+        .route("/api/mysql_qry", post(mysql_query))
         // mysql数据库批量事务
-        .route("/mysql_trans", post(mysql_transaction))
+        .route("/api/mysql_trans", post(mysql_transaction))
         // 使用用户名密码获取 jwt token
-        .route("/get_jwt_token", get(get_jwt_token))
+        .route("/api/get_jwt_token", get(get_jwt_token))
         // 使用有效的 jwt token 可访问受保护的内容
         .route("/get_protected_content", get(get_protected_content))
         // 本站页面跳转
@@ -129,11 +127,12 @@ async fn main() -> Result<(), String> {
         // 外站页面跳转
         .route("/redirect02", get(redirect02))
         // Session 用户登录页面 & 登录动作
-        .route("/login", get(user_login).post(login_action))
+        .route("/login", get(user_login))
+        .route("/api/login", post(login_action))
         // Session 用户首页页面
         .route("/main", get(user_main))
         // Session 用户登出动作
-        .route("/logout", get(logout_action))
+        .route("/api/logout", get(logout_action))
         // 文件上传页面
         .route("/uploadfile", get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
         .layer(
