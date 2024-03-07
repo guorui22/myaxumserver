@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, TimeDelta};
 use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use lazy_static::lazy_static;
 use serde_json::json;
@@ -70,7 +70,7 @@ impl Jwt {
 
     /// 计算 Token 过期时间
     pub(crate) fn calc_claims_exp(exp: i64) -> i64 {
-        (Local::now() + Duration::seconds(exp)).timestamp()
+        (Local::now() + Duration::try_seconds(exp).unwrap_or(TimeDelta::zero())).timestamp()
     }
     /// 获取密钥的字节数组
     fn secret_bytes(&self) -> &[u8] {

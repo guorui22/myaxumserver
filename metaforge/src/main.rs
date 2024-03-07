@@ -11,7 +11,6 @@ use tower::limit::ConcurrencyLimitLayer;
 use tower::{ServiceBuilder};
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::decompression::{RequestDecompressionLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
@@ -139,7 +138,6 @@ async fn main() -> Result<(), String> {
         .route("/uploadfile", get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
         .layer(
             ServiceBuilder::new()
-
                 // 禁用请求体大小默认2MB的限制
                 .layer(DefaultBodyLimit::disable())
                 // 限制请求体大小为 100MB
@@ -167,7 +165,6 @@ async fn main() -> Result<(), String> {
                         .allow_methods([Method::GET, Method::POST])
                         .allow_origin(Any),
                 )
-                .layer(RequestDecompressionLayer::new())
         );
 
     // GRPC 服务

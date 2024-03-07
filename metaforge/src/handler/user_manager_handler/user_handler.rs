@@ -16,10 +16,7 @@ use crate::handler::{LoginMessage, LoginTemplate, MainTemplate, UserLoginForm, U
 /// Session场景-登录界面
 #[debug_handler]
 pub async fn user_login(Query(login_msg): Query<LoginMessage>) -> Result<Html<String>, String> {
-    let msg = match login_msg.msg {
-        None => "".to_string(),
-        Some(msg) => msg,
-    };
+    let msg = login_msg.msg.unwrap_or("".to_string());
     let login_template = LoginTemplate { msg };
     let html = login_template.render().map_err(|err| {
         format!("login 模板渲染失败：{}", err)
