@@ -210,12 +210,16 @@ async fn main() -> Result<(), String> {
         Ok(())
     });
 
-    let (_,_) = (grpc_thread.await.map_err(|err| {
-        format!("{:?}", err)
-    })?,
-    web_thread.await.map_err(|err| {
-        format!("{:?}", err)
-    })?);
+    // 等待 GRPC 和 HTTP 服务启动完成
+    let (_,_) = (
+        grpc_thread.await.map_err(|err| {
+            format!("{:?}", err)
+        })?,
+        web_thread.await.map_err(|err| {
+            format!("{:?}", err)
+        })?
+    );
 
+    // 退出应用程序
     Ok(())
 }

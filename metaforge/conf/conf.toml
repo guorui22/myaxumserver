@@ -2,7 +2,7 @@
 mn_log_path = "/home/gr/桌面"
 mn_upload_path = "/home/gr/桌面"
 mn_log_name = "my_log"
-mn_log_level = "trace"
+mn_log_level = "debug"
 mn_grpc_host = "0.0.0.0"
 mn_grpc_port = 29029
 mn_http_host = "127.0.0.1"
