@@ -210,7 +210,7 @@ async fn main() -> Result<(), String> {
         Ok(())
     });
 
-    // 等待 GRPC 和 HTTP 服务启动完成
+    // 启动 GRPC 和 HTTP 服务
     let (_,_) = (
         grpc_thread.await.map_err(|err| {
             format!("{:?}", err)
