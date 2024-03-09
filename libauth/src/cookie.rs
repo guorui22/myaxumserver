@@ -11,6 +11,7 @@ pub fn save_session_id_to_cookie(session_id: &str, headers: &mut HeaderMap) {
         // 设置 Cookie 过期
         format!("{}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/", TOKEN_NAME_FOR_COOKIE)
     } else {
+        // 设置 Cookie 中的 Token 值
         format!("{}={};path=/", TOKEN_NAME_FOR_COOKIE, session_id)
     };
     headers.insert(

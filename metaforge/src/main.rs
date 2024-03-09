@@ -134,18 +134,20 @@ async fn main() -> Result<(), String> {
         // Session 用户登出动作
         .route("/api/logout", get(logout_action))
         // 文件上传页面
-        .route("/uploadfile", get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
+        .route("/uploadfile", get(upload_file))
+        .route("/api/uploadfile", post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
+        // 路由中间件配置
         .layer(
             ServiceBuilder::new()
                 // 禁用请求体大小默认2MB的限制
                 .layer(DefaultBodyLimit::disable())
                 // 限制请求体大小为 100MB
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))
-                // 共享MySQL01数据库连接池
+                // 在多个请求间共享MySQL01数据库连接池
                 .layer(Extension(test_mysql_db_01_pool))
-                // 共享Redis01数据库连接池
+                // 在多个请求间共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
-                // 共享文件上传路径
+                // 在多个请求间共享文件上传后在服务器上的保存路径
                 .layer(Extension(UploadPath { upload_path: ini_main.get("mn_upload_path").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
                 // 启用数据压缩
                 .layer(CompressionLayer::new())
@@ -162,7 +164,7 @@ async fn main() -> Result<(), String> {
                 .layer(
                     CorsLayer::new()
                         .allow_methods([Method::GET, Method::POST])
-                        .allow_origin(Any),
+                        .allow_origin(Any)
                 )
         );
 
@@ -192,8 +194,8 @@ async fn main() -> Result<(), String> {
     });
 
     // HTTP 服务
-    let host = ini_main.get("mn_server_host").map_or("127.0.0.1", |h| h).to_string();
-    let port = ini_main.get("mn_server_port").map_or("5000", |p| p).to_string();
+    let host = ini_main.get("mn_http_host").map_or("127.0.0.1", |h| h).to_string();
+    let port = ini_main.get("mn_http_port").map_or("5000", |p| p).to_string();
     let web_thread: JoinHandle<Result<(), String>> = spawn(async move {
         // 启动 Http 服务
         let addr = format!("{host}:{port}");
