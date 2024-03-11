@@ -43,7 +43,7 @@ pub async fn get_protected_content(
 
     Ok(Json(json!({
         "status": 0,
-        "result": "Welcome to protected chronology!",
+        "result": format!("Welcome {} to protected chronology!", claims.name),
     })))
 }
 
