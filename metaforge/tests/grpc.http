@@ -1,0 +1,60 @@
+###
+GRPC localhost:29029/calculator.CalculatorService/findSquare
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+
+{
+  "number": 8
+}
+
+<> 2024-03-11T113629.OK.json
+<> 2024-03-05T110542.OK.json
+<> 2024-02-28T143743.OK.json
+<> 2024-02-25T170738.OK.json
+<> 2024-02-22T170053.OK.json
+<> 2024-02-22T170046.OK.json
+<> 2024-02-18T104243.OK.json
+<> 2024-02-18T102821.OK.json
+<> 2024-02-02T090716.OK.json
+<> 2024-02-01T104723.OK.json
+<> 2024-02-01T101825.OK.json
+
+###
+GRPC localhost:29029/calculator.CalculatorService/findFactors
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+
+{
+  "number": 16
+}
+
+###
+GRPC localhost:29029/login.LoginService/DoLogin
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+
+{
+  "usercode": "111",
+  "password": "222"
+}
+
+<> 2024-03-11T113645.OK.json
+<> 2024-03-05T121649.OK.json
+<> 2024-03-05T121648.OK.json
+<> 2024-03-05T121646.OK.json
+<> 2024-03-05T121645.OK.json
+<> 2024-03-05T121644.OK.json
+<> 2024-03-05T121643.OK.json
+<> 2024-03-05T121641.OK.json
+<> 2024-03-05T120122.OK.json
+<> 2024-03-05T110536.OK.json
+<> 2024-03-05T110533.OK.json
+<> 2024-02-28T171158.OK.json
+<> 2024-02-28T171153.OK.json
+<> 2024-02-28T143735.OK.json
+<> 2024-02-26T110923.OK.json
+<> 2024-02-26T110921.OK.json
+<> 2024-02-25T173531.OK.json
+<> 2024-02-25T172818.OK.json
+<> 2024-02-25T172817.OK.json
+<> 2024-02-25T172816.OK.json
+<> 2024-02-25T172808.OK.json
+<> 2024-02-25T172802.OK.json
+
