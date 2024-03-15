@@ -2,16 +2,16 @@
 use std::rc::Rc;
 use deno_ast::{MediaType, ParseParams, SourceTextInfo};
 
-use deno_core::{Extension, FastString, ModuleCodeBytes, ModuleCodeString, ModuleLoadResponse, ModuleSourceCode, ModuleSpecifier, Op, op2, PollEventLoopOptions, RequestedModuleType};
+use deno_core::{Extension, FastString, ModuleLoadResponse, ModuleSourceCode, ModuleSpecifier, Op, op2, PollEventLoopOptions, RequestedModuleType};
 use deno_core::error::AnyError;
-use deno_core::futures::FutureExt;
 
 fn main() {
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .unwrap();
-    if let Err(error) = runtime.block_on(run_js("metaforge/examples/rust_to_js/my_module.js")) {
+    if let Err(error) = runtime.block_on(run_js("metaforge/examples/rust_to_js/example.ts")) {
+    // if let Err(error) = runtime.block_on(run_js("metaforge/examples/rust_to_js/my_module.js")) {
         eprintln!("error: {}", error);
     }
 }
@@ -27,7 +27,8 @@ async fn run_js(file_path: &str) -> Result<(), AnyError> {
 
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
-        module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
+        module_loader: Some(Rc::new(TsModuleLoader)),
+        // module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
         extensions: vec![runjs_extension],
         ..Default::default()
     });
@@ -80,9 +81,9 @@ impl deno_core::ModuleLoader for TsModuleLoader {
         deno_core::resolve_import(specifier, referrer).map_err(|e| e.into())
     }
 
-    fn load(&self, module_specifier: &ModuleSpecifier, maybe_referrer: Option<&ModuleSpecifier>, is_dyn_import: bool, requested_module_type: RequestedModuleType) -> ModuleLoadResponse {
+    fn load(&self, module_specifier: &ModuleSpecifier, _maybe_referrer: Option<&ModuleSpecifier>, _is_dyn_import: bool, _requested_module_type: RequestedModuleType) -> ModuleLoadResponse {
         let module_specifier = module_specifier.clone();
-        ModuleLoadResponse::Async(async move {
+        ModuleLoadResponse::Sync({
             let path = module_specifier.to_file_path().unwrap();
 
             // 根据文件扩展名解析 MediaType，据此判断是否需要对文件进行编译
@@ -114,7 +115,8 @@ impl deno_core::ModuleLoader for TsModuleLoader {
                     scope_analysis: false,
                     maybe_syntax: None,
                 }).unwrap();
-                parsed.transpile(&Default::default()).unwrap().text
+                let string = parsed.transpile(&Default::default()).unwrap().text;
+                string
             } else {
                 string_code
             };
@@ -123,6 +125,6 @@ impl deno_core::ModuleLoader for TsModuleLoader {
             // 加载模块并返回
             let module = deno_core::ModuleSource::new(module_type, code, &module_specifier, );
             Ok(module)
-        }.boxed_local())
+        })
     }
 }
