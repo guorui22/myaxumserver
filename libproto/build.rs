@@ -13,7 +13,7 @@ fn main() {
     }
 
     tonic_build::configure()
-        .protoc_arg("--experimental_allow_proto3_optional")// 支持 proto3 的 optional 语法
+        .protoc_arg("--experimental_allow_proto3_optional") // 支持 proto3 的 optional 语法
         .out_dir("src") // 生成代码的存放目录
         .build_client(true)
         .build_server(true)

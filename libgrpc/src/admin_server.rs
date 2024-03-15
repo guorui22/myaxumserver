@@ -15,9 +15,7 @@ pub struct Admin {
 
 impl Admin {
     pub fn new(pool: Arc<MySqlPool>) -> Self {
-        Self {
-            pool,
-        }
+        Self { pool }
     }
 }
 
@@ -65,13 +63,13 @@ impl AdminService for Admin {
                 AND (? IS NULL OR is_del=?)
         "#,
         )
-            .bind(&email)
-            .bind(&email)
-            .bind(is_del)
-            .bind(is_del)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        .bind(&email)
+        .bind(&email)
+        .bind(is_del)
+        .bind(is_del)
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|err| tonic::Status::internal(err.to_string()))?;
         let mut admins = Vec::with_capacity(rows.len());
         for row in rows {
             let a = libproto::Admin {
@@ -138,14 +136,14 @@ impl AdminService for Admin {
             .map_err(|err| tonic::Status::internal(err.to_string()))?
             .rows_affected();
         if row_count > 0 {
-            if let Ok(response) = self.get_admin(tonic::Request::new(GetAdminRequest {
-                condition: Some(libproto::get_admin_request::Condition::ById(
-                    libproto::get_admin_request::ById {
-                        id,
-                        is_del: None,
-                    },
-                )),
-            })).await {
+            if let Ok(response) = self
+                .get_admin(tonic::Request::new(GetAdminRequest {
+                    condition: Some(libproto::get_admin_request::Condition::ById(
+                        libproto::get_admin_request::ById { id, is_del: None },
+                    )),
+                }))
+                .await
+            {
                 if let Some(admin) = response.into_inner().admin {
                     return Ok(tonic::Response::new(ToggleAdminReply {
                         id,
@@ -173,9 +171,9 @@ impl AdminService for Admin {
                 sqlx::query("SELECT COUNT(*) FROM admins WHERE id=?").bind(id)
             }
         }
-            .fetch_one(&*self.pool)
-            .await
-            .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        .fetch_one(&*self.pool)
+        .await
+        .map_err(|err| tonic::Status::internal(err.to_string()))?;
         let count: i64 = row.get(0);
         Ok(tonic::Response::new(AdminExistsReply { exists: count > 0 }))
     }
@@ -226,9 +224,9 @@ impl AdminService for Admin {
                         sqlx::query("SELECT id,email,is_del FROM admins WHERE id=?").bind(bi.id)
                     }
                 }
-                    .fetch_optional(&*self.pool)
-                    .await
-                    .map_err(|err| tonic::Status::internal(err.to_string()))?;
+                .fetch_optional(&*self.pool)
+                .await
+                .map_err(|err| tonic::Status::internal(err.to_string()))?;
                 if let Some(row) = row {
                     GetAdminReply {
                         admin: Some(libproto::Admin {

@@ -1,11 +1,11 @@
 use libgrpc::{generate_random_string, get_grpc_client};
-use tonic::Request;
-use tonic::metadata::MetadataValue;
-use tonic::transport::Channel;
 use libproto::{
     category_service_client::CategoryServiceClient, CreateCategoryRequest, EditCategoryRequest,
     GetCategoryRequest, ListCategoryRequest, ToggleCategoryRequest,
 };
+use tonic::metadata::MetadataValue;
+use tonic::transport::Channel;
+use tonic::Request;
 
 /// 服务器地址
 const TEST_ADDRESS: &'static str = "http://127.0.0.1:29029";

@@ -1,12 +1,12 @@
 mod bearer_jwt;
 mod claims;
-mod error;
-mod test;
 mod cookie;
+mod error;
 pub mod password;
+mod test;
 
 pub use bearer_jwt::*;
 pub use claims::*;
-pub use error::*;
 pub use cookie::*;
+pub use error::*;
 pub use password::*;

@@ -1,12 +1,15 @@
-use tonic::{Request, Response, Status};
+use libproto::login_service_server::LoginService;
 use libproto::{LoginReply, LoginRequest};
-use libproto::login_service_server::{LoginService};
+use tonic::{Request, Response, Status};
 
 pub struct Login;
 
 #[tonic::async_trait]
 impl LoginService for Login {
-    async fn do_login(&self, request: Request<LoginRequest>) -> Result<Response<LoginReply>, Status> {
+    async fn do_login(
+        &self,
+        request: Request<LoginRequest>,
+    ) -> Result<Response<LoginReply>, Status> {
         let input = request.into_inner();
         let output = LoginReply {
             status: 0,

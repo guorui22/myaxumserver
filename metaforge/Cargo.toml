@@ -44,5 +44,14 @@ libgrpc = { path = "../libgrpc" }
 libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
-# 在安全沙箱中执行JavaScript代码
-rustyscript = { version = "0.3.0" }
+# 执行 JavaScript & TypeScript 代码
+deno_core = { version = "0.263.0" }
+# 编译 TypeScript 为 JavaScript 代码
+deno_ast = { version = "1.0.1", features = ["transpiling"] }
+
+[dev-dependencies]
+reqwest = { version = "0.11.24" }
+
+[[example]]
+name = "rust_to_js"
+path = "examples/rust_to_js/rust_to_js.rs"

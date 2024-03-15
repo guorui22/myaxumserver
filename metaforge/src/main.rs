@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
-use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::routing::{get, get_service, post};
+use axum::{Extension, Router};
 use tokio::spawn;
 use tokio::task::JoinHandle;
 use tower::limit::ConcurrencyLimitLayer;
-use tower::{ServiceBuilder};
+use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
@@ -17,55 +17,59 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
 use libconfig::init_server_config;
-use libdatabase::{GrMySQLPool, init_mysql_conn_pool, init_redis_conn_pool, Pool, Redis01, RedisPool, TestMySqlDb01};
+use libdatabase::{
+    init_mysql_conn_pool, init_redis_conn_pool, GrMySQLPool, Pool, Redis01, RedisPool,
+    TestMySqlDb01,
+};
 use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
-#[allow(unused_imports)]
-use libtracing::{get_my_format, info, Level, trace, tracing_subscriber};
 #[cfg(not(debug_assertions))]
 use libtracing::get_my_file_writer;
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
-use metaforge::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
+#[allow(unused_imports)]
+use libtracing::{get_my_format, info, trace, tracing_subscriber, Level};
+use metaforge::handler::{
+    get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
+    mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
+    user_main, UploadPath,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
-
     // 如果监听到 ctrl+c 信号就退出应用
     ctrlc::set_handler(|| {
         info!("监听到 CTRL + C 操作, 退出应用程序.");
         std::process::exit(0);
-    }).unwrap_or_else(|err| {
-        panic!(
-            "{}",
-            err.to_string()
-        )
-    });
+    })
+    .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
-    let ini_main: &HashMap<String, String> = ini.get("main").ok_or("MAIN section not found".to_string())?;
+    let ini_main: &HashMap<String, String> = ini
+        .get("main")
+        .ok_or("MAIN section not found".to_string())?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
-        let ini_main_mn_log_path = ini_main
+    let ini_main_mn_log_path = ini_main
         .get("mn_log_path")
         .ok_or("MN_LOG_PATH not found".to_string())?;
     #[cfg(not(debug_assertions))]
-        let ini_main_mn_log_name = ini_main
+    let ini_main_mn_log_name = ini_main
         .get("mn_log_name")
         .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
-        let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
+    let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
         get_my_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
 
     // debug模式下，日志输出到标准输出
     #[cfg(debug_assertions)]
-        let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
+    let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
 
     // 初始化日志等级、日志输出位置、日志格式(定制和筛选日志)
     let ini_log_level = ini_main.get("mn_log_level").map(|s| s.to_uppercase());
@@ -91,7 +95,8 @@ async fn main() -> Result<(), String> {
         .get("mysql_01")
         .ok_or(format!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
-    let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> = init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
+    let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
+        init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
@@ -135,7 +140,10 @@ async fn main() -> Result<(), String> {
         .route("/api/logout", get(logout_action))
         // 文件上传页面
         .route("/uploadfile", get(upload_file))
-        .route("/api/uploadfile", post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
+        .route(
+            "/api/uploadfile",
+            post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))),
+        )
         // 路由中间件配置
         .layer(
             ServiceBuilder::new()
@@ -148,7 +156,12 @@ async fn main() -> Result<(), String> {
                 // 在多个请求间共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
                 // 在多个请求间共享文件上传后在服务器上的保存路径
-                .layer(Extension(UploadPath { upload_path: ini_main.get("mn_upload_path").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
+                .layer(Extension(UploadPath {
+                    upload_path: ini_main
+                        .get("mn_upload_path")
+                        .ok_or("获取文件上传路径出错。".to_string())?
+                        .to_string(),
+                }))
                 // 启用数据压缩
                 .layer(CompressionLayer::new())
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
@@ -164,15 +177,20 @@ async fn main() -> Result<(), String> {
                 .layer(
                     CorsLayer::new()
                         .allow_methods([Method::GET, Method::POST])
-                        .allow_origin(Any)
-                )
+                        .allow_origin(Any),
+                ),
         );
 
     // GRPC 服务
-    let host = ini_main.get("mn_grpc_host").map_or("0.0.0.0", |h| h).to_string();
-    let port = ini_main.get("mn_grpc_port").map_or("29029", |p| p).to_string();
+    let host = ini_main
+        .get("mn_grpc_host")
+        .map_or("0.0.0.0", |h| h)
+        .to_string();
+    let port = ini_main
+        .get("mn_grpc_port")
+        .map_or("29029", |p| p)
+        .to_string();
     let grpc_thread: JoinHandle<Result<(), String>> = spawn(async move {
-
         // 启动 grpc 服务
         let addr = format!("{host}:{port}");
         info!("GRPC 服务器启动成功: http://{addr}");
@@ -181,43 +199,51 @@ async fn main() -> Result<(), String> {
         let login_srv = Login;
 
         tonic::transport::Server::builder()
-            .add_service(CalculatorServiceServer::with_interceptor(calculater_srv, libgrpc::check_auth))
-            .add_service(LoginServiceServer::with_interceptor(login_srv, libgrpc::check_auth))
-            .serve(addr.parse().map_err(|err| {
-                format!("GRPC 服务器地址解析失败：{:?}", err)
-            })?)
-            .await.map_err(|err| {
-                format!("GRPC 服务器启动失败：{:?}", err)
-            })?;
+            .add_service(CalculatorServiceServer::with_interceptor(
+                calculater_srv,
+                libgrpc::check_auth,
+            ))
+            .add_service(LoginServiceServer::with_interceptor(
+                login_srv,
+                libgrpc::check_auth,
+            ))
+            .serve(
+                addr.parse()
+                    .map_err(|err| format!("GRPC 服务器地址解析失败：{:?}", err))?,
+            )
+            .await
+            .map_err(|err| format!("GRPC 服务器启动失败：{:?}", err))?;
 
         Ok(())
     });
 
     // HTTP 服务
-    let host = ini_main.get("mn_http_host").map_or("127.0.0.1", |h| h).to_string();
-    let port = ini_main.get("mn_http_port").map_or("5000", |p| p).to_string();
+    let host = ini_main
+        .get("mn_http_host")
+        .map_or("127.0.0.1", |h| h)
+        .to_string();
+    let port = ini_main
+        .get("mn_http_port")
+        .map_or("5000", |p| p)
+        .to_string();
     let web_thread: JoinHandle<Result<(), String>> = spawn(async move {
         // 启动 Http 服务
         let addr = format!("{host}:{port}");
         info!("Http 服务器启动成功: http://{addr}");
 
-        let listener = tokio::net::TcpListener::bind(addr).await.map_err(|err| {
-            format!("Http 服务器监听端口失败：{:?}", err)
-        })?;
-        axum::serve(listener, router).await.map_err(|err| {
-            format!("Http 服务器启动失败：{:?}", err)
-        })?;
+        let listener = tokio::net::TcpListener::bind(addr)
+            .await
+            .map_err(|err| format!("Http 服务器监听端口失败：{:?}", err))?;
+        axum::serve(listener, router)
+            .await
+            .map_err(|err| format!("Http 服务器启动失败：{:?}", err))?;
         Ok(())
     });
 
     // 启动 GRPC 和 HTTP 服务
-    let (_,_) = (
-        grpc_thread.await.map_err(|err| {
-            format!("{:?}", err)
-        })?,
-        web_thread.await.map_err(|err| {
-            format!("{:?}", err)
-        })?
+    let (_, _) = (
+        grpc_thread.await.map_err(|err| format!("{:?}", err))?,
+        web_thread.await.map_err(|err| format!("{:?}", err))?,
     );
 
     // 退出应用程序

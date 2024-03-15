@@ -9,15 +9,15 @@ pub const SESSION_PREFIX_FOR_REDIS: &str = "axum_rs_session:";
 pub fn save_session_id_to_cookie(session_id: &str, headers: &mut HeaderMap) {
     let cookie = if session_id.is_empty() {
         // 设置 Cookie 过期
-        format!("{}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/", TOKEN_NAME_FOR_COOKIE)
+        format!(
+            "{}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/",
+            TOKEN_NAME_FOR_COOKIE
+        )
     } else {
         // 设置 Cookie 中的 Token 值
         format!("{}={};path=/", TOKEN_NAME_FOR_COOKIE, session_id)
     };
-    headers.insert(
-        axum::http::header::SET_COOKIE,
-        cookie.parse().unwrap(),
-    );
+    headers.insert(axum::http::header::SET_COOKIE, cookie.parse().unwrap());
 }
 
 /// 从浏览器 Cookie 中获取 Session ID

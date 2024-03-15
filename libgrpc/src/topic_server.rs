@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
-use chrono::{Datelike, DateTime, Local, Timelike, TimeZone};
+use chrono::{DateTime, Datelike, Local, TimeZone, Timelike};
 use sqlx::{MySqlPool, Row};
 
-use libproto::{CreateTopicReply, CreateTopicRequest, EditTopicReply, EditTopicRequest, GetTopicReply, GetTopicRequest, ListTopicReply, ListTopicRequest, ToggleTopicReply, ToggleTopicRequest};
 use libproto::topic_service_server::TopicService;
+use libproto::{
+    CreateTopicReply, CreateTopicRequest, EditTopicReply, EditTopicRequest, GetTopicReply,
+    GetTopicRequest, ListTopicReply, ListTopicRequest, ToggleTopicReply, ToggleTopicRequest,
+};
 
 pub struct Topic {
     pool: Arc<MySqlPool>,
@@ -12,9 +15,7 @@ pub struct Topic {
 
 impl Topic {
     pub fn new(pool: Arc<MySqlPool>) -> Self {
-        Self {
-            pool,
-        }
+        Self { pool }
     }
 }
 
@@ -35,14 +36,16 @@ impl TopicService for Topic {
             Some(summary) => summary,
             None => get_summary(&content),
         };
-        let row_id = sqlx::query("INSERT INTO topics (title,category_id,content,summary) VALUES(?,?,?,?)")
-            .bind(title)
-            .bind(category_id)
-            .bind(content)
-            .bind(summary)
-            .execute(&*self.pool)
-            .await.map_err(|err| tonic::Status::internal(err.to_string()))?
-            .last_insert_id();
+        let row_id =
+            sqlx::query("INSERT INTO topics (title,category_id,content,summary) VALUES(?,?,?,?)")
+                .bind(title)
+                .bind(category_id)
+                .bind(content)
+                .bind(summary)
+                .execute(&*self.pool)
+                .await
+                .map_err(|err| tonic::Status::internal(err.to_string()))?
+                .last_insert_id();
         let reply = CreateTopicReply { id: row_id as i64 };
         Ok(tonic::Response::new(reply))
     }
@@ -55,18 +58,17 @@ impl TopicService for Topic {
             Some(s) => s,
             None => get_summary(&r.content),
         };
-        let rows_affected = sqlx::query(
-            "UPDATE topics SET title=?,content=?,summary=?,category_id=? WHERE id=?",
-        )
-            .bind(r.title)
-            .bind(r.content)
-            .bind(summary)
-            .bind(r.category_id)
-            .bind(r.id)
-            .execute(&*self.pool)
-            .await
-            .map_err(|err| tonic::Status::internal(err.to_string()))?
-            .rows_affected();
+        let rows_affected =
+            sqlx::query("UPDATE topics SET title=?,content=?,summary=?,category_id=? WHERE id=?")
+                .bind(r.title)
+                .bind(r.content)
+                .bind(summary)
+                .bind(r.category_id)
+                .bind(r.id)
+                .execute(&*self.pool)
+                .await
+                .map_err(|err| tonic::Status::internal(err.to_string()))?
+                .rows_affected();
         Ok(tonic::Response::new(EditTopicReply {
             id: r.id,
             ok: rows_affected > 0,
@@ -109,19 +111,19 @@ impl TopicService for Topic {
                     (dateline BETWEEN ? AND ?)
                 )"#,
         )
-            .bind(category_id)
-            .bind(category_id)
-            .bind(&keyword)
-            .bind(&keyword)
-            .bind(is_del)
-            .bind(is_del)
-            .bind(start)
-            .bind(end)
-            .bind(start)
-            .bind(end)
-            .fetch_one(&*self.pool)
-            .await
-            .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        .bind(category_id)
+        .bind(category_id)
+        .bind(&keyword)
+        .bind(&keyword)
+        .bind(is_del)
+        .bind(is_del)
+        .bind(start)
+        .bind(end)
+        .bind(start)
+        .bind(end)
+        .fetch_one(&*self.pool)
+        .await
+        .map_err(|err| tonic::Status::internal(err.to_string()))?;
 
         dbg!(&row);
 
@@ -145,21 +147,21 @@ impl TopicService for Topic {
         LIMIT ? OFFSET ?
         "#,
         )
-            .bind(category_id)
-            .bind(category_id)
-            .bind(&keyword)
-            .bind(&keyword)
-            .bind(is_del)
-            .bind(is_del)
-            .bind(start)
-            .bind(end)
-            .bind(start)
-            .bind(end)
-            .bind(page_size)
-            .bind(offset)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        .bind(category_id)
+        .bind(category_id)
+        .bind(&keyword)
+        .bind(&keyword)
+        .bind(is_del)
+        .bind(is_del)
+        .bind(start)
+        .bind(end)
+        .bind(start)
+        .bind(end)
+        .bind(page_size)
+        .bind(offset)
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|err| tonic::Status::internal(err.to_string()))?;
 
         let mut topics = Vec::with_capacity(rows.len());
 
@@ -290,7 +292,5 @@ fn dt_conver(dt: &DateTime<Local>) -> Option<prost_types::Timestamp> {
 
 // 转换时间戳, 把Option<prost_types::Timestamp>, 转换为Option<DateTime<Local>>
 fn tm_cover(tm: Option<prost_types::Timestamp>) -> Option<DateTime<Local>> {
-    tm.and_then(|tm| Option::from({
-        Local.timestamp_opt(tm.seconds, 0).unwrap()
-    }))
+    tm.and_then(|tm| Option::from(Local.timestamp_opt(tm.seconds, 0).unwrap()))
 }

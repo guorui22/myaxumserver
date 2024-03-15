@@ -4,9 +4,9 @@ use axum::{
     http::header::CONTENT_TYPE,
     response::{IntoResponse, Response},
 };
+use futures::future::BoxFuture;
 #[allow(unused_imports)]
 use futures::{ready, TryFutureExt};
-use futures::future::BoxFuture;
 use std::{
     convert::Infallible,
     task::{Context, Poll},
@@ -32,9 +32,9 @@ impl<A, B> MultiplexService<A, B> {
 }
 
 impl<A, B> Clone for MultiplexService<A, B>
-    where
-        A: Clone,
-        B: Clone,
+where
+    A: Clone,
+    B: Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -48,13 +48,13 @@ impl<A, B> Clone for MultiplexService<A, B>
 }
 
 impl<A, B> Service<Request<Body>> for MultiplexService<A, B>
-    where
-        A: Service<Request<Body>, Error = Infallible>,
-        A::Response: IntoResponse,
-        A::Future: Send + 'static,
-        B: Service<Request<Body>>,
-        B::Response: IntoResponse,
-        B::Future: Send + 'static,
+where
+    A: Service<Request<Body>, Error = Infallible>,
+    A::Response: IntoResponse,
+    A::Future: Send + 'static,
+    B: Service<Request<Body>>,
+    B::Response: IntoResponse,
+    B::Future: Send + 'static,
 {
     type Response = Response;
     type Error = B::Error;

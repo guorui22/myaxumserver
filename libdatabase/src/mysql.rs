@@ -1,8 +1,8 @@
+use sqlx::mysql::MySqlPoolOptions;
+use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::time::Duration;
-use sqlx::{MySql, MySqlPool, Pool};
-use sqlx::mysql::MySqlPoolOptions;
 
 /// 自定义数据库连接池类型 TestMySqlDb01
 #[derive(Clone, Debug)]
@@ -53,7 +53,8 @@ pub async fn init_mysql_conn_pool<T>(
                 param_map.get("my_host").unwrap_or(def_val),
                 param_map.get("my_port").unwrap_or(def_val),
                 param_map.get("my_db_name").unwrap_or(def_val),
-            ).as_str()
+            )
+            .as_str(),
         )
         .await
         .map_err(|err| err.to_string())?;
@@ -66,63 +67,82 @@ pub async fn init_mysql_conn_pool<T>(
 macro_rules! get_mysql_column_value {
     ($row:ident, $col:ident) => {
         match $col.type_info().name() {
-            "VARBINARY" | "BINARY" | "BLOB" => {
-                $row.try_get::<Vec<u8>, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "VARCHAR" | "CHAR" | "TEXT" => {
-                $row.try_get::<String, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "DOUBLE" => {
-                $row.try_get::<f64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "FLOAT" => {
-                $row.try_get::<f32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "BIGINT UNSIGNED" => {
-                $row.try_get::<u64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "INT UNSIGNED" => {
-                $row.try_get::<u32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "SMALLINT UNSIGNED" => {
-                $row.try_get::<u16, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "TINYINT UNSIGNED" => {
-                $row.try_get::<u8, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "BIGINT" => {
-                $row.try_get::<i64, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "INT" => {
-                $row.try_get::<i32, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "SMALLINT" => {
-                $row.try_get::<i16, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "TINYINT" => {
-                $row.try_get::<i8, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "TINYINT(1)" | "BOOLEAN" | "BOOL" => {
-                $row.try_get::<bool, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "TIMESTAMP" => {
-                $row.try_get::<chrono::DateTime<Local>, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "DATETIME" => {
-                $row.try_get::<chrono::NaiveDateTime, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "DATE" => {
-                $row.try_get::<chrono::NaiveDate, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "TIME" => {
-                $row.try_get::<chrono::NaiveTime, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "DECIMAL" => {
-                $row.try_get::<bigdecimal::BigDecimal, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
-            "JSON" => {
-                $row.try_get::<serde_json::Value, _>($col.ordinal()).map(|s| json!(s)).unwrap_or_default()
-            }
+            "VARBINARY" | "BINARY" | "BLOB" => $row
+                .try_get::<Vec<u8>, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "VARCHAR" | "CHAR" | "TEXT" => $row
+                .try_get::<String, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "DOUBLE" => $row
+                .try_get::<f64, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "FLOAT" => $row
+                .try_get::<f32, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "BIGINT UNSIGNED" => $row
+                .try_get::<u64, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "INT UNSIGNED" => $row
+                .try_get::<u32, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "SMALLINT UNSIGNED" => $row
+                .try_get::<u16, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "TINYINT UNSIGNED" => $row
+                .try_get::<u8, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "BIGINT" => $row
+                .try_get::<i64, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "INT" => $row
+                .try_get::<i32, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "SMALLINT" => $row
+                .try_get::<i16, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "TINYINT" => $row
+                .try_get::<i8, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "TINYINT(1)" | "BOOLEAN" | "BOOL" => $row
+                .try_get::<bool, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "TIMESTAMP" => $row
+                .try_get::<chrono::DateTime<Local>, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "DATETIME" => $row
+                .try_get::<chrono::NaiveDateTime, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "DATE" => $row
+                .try_get::<chrono::NaiveDate, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "TIME" => $row
+                .try_get::<chrono::NaiveTime, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "DECIMAL" => $row
+                .try_get::<bigdecimal::BigDecimal, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
+            "JSON" => $row
+                .try_get::<serde_json::Value, _>($col.ordinal())
+                .map(|s| json!(s))
+                .unwrap_or_default(),
             _ => panic!("Unsupported type"),
         }
     };

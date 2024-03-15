@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use chrono::{Duration, Local, TimeDelta};
-use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use lazy_static::lazy_static;
 use serde_json::json;
+use std::collections::HashMap;
 
 use crate::{AuthError, Claims};
 
@@ -28,15 +28,10 @@ lazy_static! {
 /// id      用户唯一ID
 /// pwd     用户密码
 pub fn get_auth_user(code: &str, pwd: &str) -> Option<&'static serde_json::Value> {
-    USER_MAP.get(code).and_then(|user| {
-        if user["pwd"] == pwd {
-            Some(user)
-        } else {
-            None
-        }
-    })
+    USER_MAP
+        .get(code)
+        .and_then(|user| if user["pwd"] == pwd { Some(user) } else { None })
 }
-
 
 /// JWT 密钥
 /// secret   密钥
@@ -83,18 +78,14 @@ impl Jwt {
             claims,
             &EncodingKey::from_secret(self.secret_bytes()),
         )
-            .map_err(|err|AuthError::TokenCreation(err.to_string()))
+        .map_err(|err| AuthError::TokenCreation(err.to_string()))
     }
     /// 验证 Token 并返回 Claims 实例
     pub fn verify_and_get(&self, token: &str) -> Result<Claims, AuthError> {
         let mut v = Validation::new(jsonwebtoken::Algorithm::HS256);
         v.set_issuer(&[self.iss.clone()]);
         let token_data = decode(token, &DecodingKey::from_secret(self.secret_bytes()), &v)
-            .map_err(|err|AuthError::InvalidToken(err.to_string()))?;
+            .map_err(|err| AuthError::InvalidToken(err.to_string()))?;
         Ok(token_data.claims)
     }
 }
-
-
-
-

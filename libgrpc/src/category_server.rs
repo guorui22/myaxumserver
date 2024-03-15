@@ -2,9 +2,13 @@ use std::sync::Arc;
 
 use sqlx::{MySqlPool, Row};
 
-use libproto::{CategoryExistsReply, CategoryExistsRequest, CreateCategoryReply, CreateCategoryRequest, EditCategoryReply, EditCategoryRequest, GetCategoryReply, GetCategoryRequest, ListCategoryReply, ListCategoryRequest, ToggleCategoryReply, ToggleCategoryRequest};
 use libproto::category_exists_request::Condition;
 use libproto::category_service_server::CategoryService;
+use libproto::{
+    CategoryExistsReply, CategoryExistsRequest, CreateCategoryReply, CreateCategoryRequest,
+    EditCategoryReply, EditCategoryRequest, GetCategoryReply, GetCategoryRequest,
+    ListCategoryReply, ListCategoryRequest, ToggleCategoryReply, ToggleCategoryRequest,
+};
 
 pub struct Category {
     pool: Arc<MySqlPool>,
@@ -12,9 +16,7 @@ pub struct Category {
 
 impl Category {
     pub fn new(pool: Arc<MySqlPool>) -> Self {
-        Self {
-            pool,
-        }
+        Self { pool }
     }
 }
 
@@ -95,7 +97,10 @@ impl CategoryService for Category {
                 None => sqlx::query("SELECT id,name,is_del FROM categories ORDER BY id"),
             },
         };
-        let rows = query.fetch_all(&*self.pool).await.map_err(|err| tonic::Status::internal(err.to_string()))?;
+        let rows = query
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|err| tonic::Status::internal(err.to_string()))?;
         if rows.is_empty() {
             return Err(tonic::Status::not_found("没有符合条件的分类"));
         }
@@ -115,18 +120,14 @@ impl CategoryService for Category {
         request: tonic::Request<ToggleCategoryRequest>,
     ) -> Result<tonic::Response<ToggleCategoryReply>, tonic::Status> {
         let ToggleCategoryRequest { id } = request.into_inner();
-        let row_count =
-            sqlx::query("UPDATE categories SET is_del=(NOT is_del) WHERE id=?")
-                .bind(id)
-                .execute(&*self.pool)
-                .await
-                .map_err(|err| tonic::Status::internal(err.to_string()))?
-                .rows_affected();
+        let row_count = sqlx::query("UPDATE categories SET is_del=(NOT is_del) WHERE id=?")
+            .bind(id)
+            .execute(&*self.pool)
+            .await
+            .map_err(|err| tonic::Status::internal(err.to_string()))?
+            .rows_affected();
         if row_count > 0 {
-            let request = tonic::Request::new(GetCategoryRequest {
-                id,
-                is_del: None,
-            });
+            let request = tonic::Request::new(GetCategoryRequest { id, is_del: None });
             let reply = self.get_category(request).await.unwrap();
             let reply = reply.into_inner().category.unwrap();
             return Ok(tonic::Response::new(ToggleCategoryReply {
@@ -148,9 +149,7 @@ impl CategoryService for Category {
             Condition::Name(name) => {
                 sqlx::query("SELECT COUNT(*) FROM categories WHERE name=?").bind(name)
             }
-            Condition::Id(id) => {
-                sqlx::query("SELECT COUNT(*) FROM categories WHERE id=?").bind(id)
-            }
+            Condition::Id(id) => sqlx::query("SELECT COUNT(*) FROM categories WHERE id=?").bind(id),
         };
         let row = query
             .fetch_one(&*self.pool)

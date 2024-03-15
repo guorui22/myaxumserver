@@ -1,12 +1,12 @@
-use tonic::Request;
+use libgrpc::{generate_random_string, get_grpc_client};
 use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
-use libgrpc::{generate_random_string, get_grpc_client};
+use tonic::Request;
 
 use libproto::{
     admin_service_client::AdminServiceClient,
-    EditAdminRequest,
-    get_admin_request::{ByAuth, ById, Condition}, GetAdminRequest, ListAdminRequest, ToggleAdminRequest,
+    get_admin_request::{ByAuth, ById, Condition},
+    EditAdminRequest, GetAdminRequest, ListAdminRequest, ToggleAdminRequest,
 };
 
 /// 服务器地址
@@ -90,7 +90,6 @@ async fn test_byauth_get_admin_as_login() {
 
 #[tokio::test]
 async fn test_list_admin() {
-
     let mut client = get_grpc_client!(AdminServiceClient<Channel>, TEST_ADDRESS, TEST_JWT);
     let resp = client
         .list_admin(tonic::Request::new(ListAdminRequest {

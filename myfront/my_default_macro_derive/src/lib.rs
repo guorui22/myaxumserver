@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, parse_macro_input};
+use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 #[proc_macro_derive(MyDefault)]
 pub fn my_default(input: TokenStream) -> TokenStream {
@@ -58,7 +58,7 @@ pub fn my_default(input: TokenStream) -> TokenStream {
                     }
                 }
             }
-        }
+        },
         _ => panic!("Only structs are supported."),
     };
 

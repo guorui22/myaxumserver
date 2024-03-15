@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::routing::{get, get_service, post};
+use axum::{Extension, Router};
 use tower::limit::ConcurrencyLimitLayer;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
@@ -15,51 +15,55 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
 use libconfig::init_server_config;
-use libdatabase::{init_mysql_conn_pool, init_redis_conn_pool, TestMySqlDb01, GrMySQLPool, Pool, Redis01, RedisPool};
+use libdatabase::{
+    init_mysql_conn_pool, init_redis_conn_pool, GrMySQLPool, Pool, Redis01, RedisPool,
+    TestMySqlDb01,
+};
 use libglobal_request_id::MyMakeRequestId;
-use libtracing::{get_my_format, info, Level, tracing_subscriber};
-#[cfg(debug_assertions)]
-use libtracing::get_my_stdout_writer;
-use myfront::handler::{get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query, mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath, user_login, user_main};
 #[cfg(not(debug_assertions))]
 use libtracing::get_my_file_writer;
+#[cfg(debug_assertions)]
+use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use libtracing::{get_my_format, info, tracing_subscriber, Level};
+use myfront::handler::{
+    get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
+    mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
+    user_main, UploadPath,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
-
     // 如果监听到 ctrl+c 信号就退出应用
     ctrlc::set_handler(|| {
         info!("监听到 CTRL + C 操作, 退出应用程序.");
         std::process::exit(0);
-    }).unwrap_or_else(|err| {
-        panic!(
-            "{}",
-            err.to_string()
-        )
-    });
+    })
+    .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
-    let ini_main: &HashMap<String, String> = ini.get("MAIN").ok_or("MAIN section not found".to_string())?;
+    let ini_main: &HashMap<String, String> = ini
+        .get("MAIN")
+        .ok_or("MAIN section not found".to_string())?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
-        let ini_main_mn_log_path = ini_main
+    let ini_main_mn_log_path = ini_main
         .get("MN_LOG_PATH")
         .ok_or("MN_LOG_PATH not found".to_string())?;
     #[cfg(not(debug_assertions))]
-        let ini_main_mn_log_name = ini_main
+    let ini_main_mn_log_name = ini_main
         .get("MN_LOG_NAME")
         .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
-        let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
+    let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
         get_my_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
 
     // debug模式下，日志输出到标准输出
     #[cfg(debug_assertions)]
-        let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
+    let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
 
     // 初始化：设置日志等级、日志输出位置、日志格式(定制和筛选日志)
     let ini_log_level = ini_main.get("MN_LOG_LEVEL").map(|s| s.to_uppercase());
@@ -85,7 +89,8 @@ async fn main() -> Result<(), String> {
         .get("MYSQL_01")
         .ok_or(format!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
-    let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> = init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
+    let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
+        init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
@@ -128,7 +133,10 @@ async fn main() -> Result<(), String> {
         // Session 用户登出动作
         .route("/logout", get(logout_action))
         // 文件上传页面
-        .route("/uploadfile", get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))))
+        .route(
+            "/uploadfile",
+            get(upload_file).post(upload_file_action.layer(ConcurrencyLimitLayer::new(5))),
+        )
         .layer(
             ServiceBuilder::new()
                 // 禁用请求体大小默认2MB的限制
@@ -140,7 +148,12 @@ async fn main() -> Result<(), String> {
                 // 共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
                 // 共享文件上传路径
-                .layer(Extension(UploadPath { upload_path: ini_main.get("MN_UPLOAD_PATH").ok_or("获取文件上传路径出错。".to_string())?.to_string() }))
+                .layer(Extension(UploadPath {
+                    upload_path: ini_main
+                        .get("MN_UPLOAD_PATH")
+                        .ok_or("获取文件上传路径出错。".to_string())?
+                        .to_string(),
+                }))
                 // 启用数据压缩
                 .layer(CompressionLayer::new())
                 // 设置全局请求ID `x-request-id` 到所有的请求头中
@@ -157,15 +170,17 @@ async fn main() -> Result<(), String> {
                     CorsLayer::new()
                         .allow_methods([Method::GET, Method::POST])
                         .allow_origin(Any),
-                )
+                ),
         );
     let host = ini_main.get("MN_SERVER_HOST").map_or("127.0.0.1", |h| h);
     let port = ini_main.get("MN_SERVER_PORT").map_or("5000", |p| p);
 
-    let listener = tokio::net::TcpListener::bind(&format!("{host}:{port}")).await.unwrap();
-    axum::serve(listener, router).await.map_err(|err| {
-        format!("服务启动失败：{:?}", err)
-    })?;
+    let listener = tokio::net::TcpListener::bind(&format!("{host}:{port}"))
+        .await
+        .unwrap();
+    axum::serve(listener, router)
+        .await
+        .map_err(|err| format!("服务启动失败：{:?}", err))?;
 
     Ok(())
 }

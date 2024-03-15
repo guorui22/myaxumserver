@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use image::{DynamicImage, ImageBuffer, imageops};
+use image::{imageops, DynamicImage, ImageBuffer};
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Error;
-use wasm_bindgen::Clamped;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::Clamped;
 use web_sys::{HtmlCanvasElement, ImageData};
 
 mod utils;
@@ -31,7 +31,8 @@ pub fn get_json() -> String {
     r#"{
         "status": 0,
         "result": "token"
-    }"#.to_string()
+    }"#
+    .to_string()
 }
 
 /// 支持反序列化为 JSON 对象的 Rust 结构体
@@ -51,7 +52,7 @@ pub fn get_jval() -> Result<JsValue, Error> {
     let example = Example {
         field1,
         field2: vec![vec![1., 2.], vec![3., 4.]],
-        field3: [1., 2., 3., 4.]
+        field3: [1., 2., 3., 4.],
     };
     serde_wasm_bindgen::to_value(&example)
 }
@@ -59,11 +60,9 @@ pub fn get_jval() -> Result<JsValue, Error> {
 /// 输入 JSON 对象
 #[wasm_bindgen]
 pub fn set_jval(val: JsValue) -> String {
-
-    let random_string:Result<Example, Error> = serde_wasm_bindgen::from_value(val);
+    let random_string: Result<Example, Error> = serde_wasm_bindgen::from_value(val);
 
     format!("对象结构：{:?}", random_string)
-
 }
 
 fn to_image(width: u32, height: u32, vec: Vec<u8>) -> DynamicImage {

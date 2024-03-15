@@ -1,12 +1,12 @@
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use arpy_axum::RpcRoute;
+use arpy_axum_common::{counter_stream, my_fallible_function, my_function, PORT};
 use arpy_server::WebSocketRouter;
 use axum::{Router, Server};
 use tower_http::cors::CorsLayer;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-use arpy_axum_common::{counter_stream, my_fallible_function, my_function, PORT};
 
 #[tokio::main]
 async fn main() {

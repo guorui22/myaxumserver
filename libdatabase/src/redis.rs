@@ -12,7 +12,7 @@ pub struct Redis01;
 #[derive(Clone)]
 pub struct RedisPool<T> {
     pub redis_pool: Pool,
-    _db_type: PhantomData<T>
+    _db_type: PhantomData<T>,
 }
 
 /// 为结构体 RedisPool<T>实现 new 方法
@@ -20,7 +20,7 @@ impl<T> RedisPool<T> {
     pub fn new(redis_pool: Pool) -> Self {
         Self {
             redis_pool,
-            _db_type: PhantomData::<T>
+            _db_type: PhantomData::<T>,
         }
     }
 }
@@ -47,7 +47,8 @@ pub async fn init_redis_conn_pool(
         .create_pool(Some(Runtime::Tokio1))
         .map_or_else(
             |err| Err(format!("Redis 数据库连接池({}) is {}", db_name, err)),
-            Ok)?;
+            Ok,
+        )?;
     Ok(pool)
 }
 

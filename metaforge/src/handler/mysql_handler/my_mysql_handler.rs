@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
-use axum::{Extension, Json};
 use axum::http::HeaderMap;
+use axum::{Extension, Json};
 use axum_macros::debug_handler;
 use chrono::offset::Local;
 use serde_json::json;
 
-use libdatabase::{DbBatchQueryArgs, get_mysql_column_value, GrMySQLPool, sqlx, TestMySqlDb01};
-use libdatabase::sqlx::{Column, Row, TypeInfo};
 use libdatabase::sqlx::types::JsonValue;
+use libdatabase::sqlx::{Column, Row, TypeInfo};
+use libdatabase::{get_mysql_column_value, sqlx, DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
 use libglobal_request_id::get_request_id;
 use libtracing::info;
 
@@ -30,20 +30,33 @@ pub async fn mysql_query(
 
     let mut rst_vec = vec![];
     for sql in sql_vec.into_iter() {
-        let vec_db_rows = sqlx::query(sql.as_str()).fetch_all(&*conn).await.map_err(|err| format!("数据库SQL执行失败: {}", err))?;
-        let vec_db_rows_maps = vec_db_rows.iter().map(|current_row| {
-            //列名集合
-            let vec_row_columns_names = current_row.columns().iter().map(|c| c.name().to_string()).collect::<Vec<String>>();
+        let vec_db_rows = sqlx::query(sql.as_str())
+            .fetch_all(&*conn)
+            .await
+            .map_err(|err| format!("数据库SQL执行失败: {}", err))?;
+        let vec_db_rows_maps = vec_db_rows
+            .iter()
+            .map(|current_row| {
+                //列名集合
+                let vec_row_columns_names = current_row
+                    .columns()
+                    .iter()
+                    .map(|c| c.name().to_string())
+                    .collect::<Vec<String>>();
 
-            //列值集合
-            let mut vec_row_columns_values = vec![];
-            for current_column in current_row.columns() {
-                let current_column_value = get_mysql_column_value!(current_row, current_column);
-                vec_row_columns_values.push(current_column_value);
-            }
-            let current_row_hashmap: HashMap<String, JsonValue> = vec_row_columns_names.into_iter().zip(vec_row_columns_values.into_iter()).collect();
-            current_row_hashmap
-        }).collect::<Vec<HashMap<String, JsonValue>>>();
+                //列值集合
+                let mut vec_row_columns_values = vec![];
+                for current_column in current_row.columns() {
+                    let current_column_value = get_mysql_column_value!(current_row, current_column);
+                    vec_row_columns_values.push(current_column_value);
+                }
+                let current_row_hashmap: HashMap<String, JsonValue> = vec_row_columns_names
+                    .into_iter()
+                    .zip(vec_row_columns_values.into_iter())
+                    .collect();
+                current_row_hashmap
+            })
+            .collect::<Vec<HashMap<String, JsonValue>>>();
 
         rst_vec.push(vec_db_rows_maps);
     }
@@ -71,7 +84,10 @@ pub async fn mysql_transaction(
     };
 
     // 开启事务
-    let mut db_transaction = conn.begin().await.map_err(|err| format!("开启数据库事务失败: {}", err))?;
+    let mut db_transaction = conn
+        .begin()
+        .await
+        .map_err(|err| format!("开启数据库事务失败: {}", err))?;
 
     let mut rst_vec = vec![];
     for sql in sql_vec.into_iter() {

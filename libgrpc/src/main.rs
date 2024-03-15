@@ -1,12 +1,12 @@
-use std::env;
-use std::sync::Arc;
-use sqlx::MySqlPool;
 use libgrpc::{Admin, Calculator, Category, Login, Topic};
 use libproto::admin_service_server::AdminServiceServer;
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::category_service_server::CategoryServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 use libproto::topic_service_server::TopicServiceServer;
+use sqlx::MySqlPool;
+use std::env;
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() {
@@ -27,12 +27,16 @@ async fn main() {
         // .add_service(AdminServiceServer::with_interceptor(admin_srv, libgrpc::check_auth))
         // .add_service(CategoryServiceServer::with_interceptor(category_srv,libgrpc::check_auth))
         // .add_service(TopicServiceServer::with_interceptor(topic_srv, libgrpc::check_auth))
-        .add_service(CalculatorServiceServer::with_interceptor(calculater_srv, libgrpc::check_auth))
-        .add_service(LoginServiceServer::with_interceptor(login_srv, libgrpc::check_auth))
+        .add_service(CalculatorServiceServer::with_interceptor(
+            calculater_srv,
+            libgrpc::check_auth,
+        ))
+        .add_service(LoginServiceServer::with_interceptor(
+            login_srv,
+            libgrpc::check_auth,
+        ))
         // .add_service(CalculatorServiceServer::new(calculater_srv))
         .serve(addr.parse().unwrap())
         .await
         .unwrap();
-
-
 }
