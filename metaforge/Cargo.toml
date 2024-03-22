@@ -45,10 +45,10 @@ libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
 # 执行 JavaScript & TypeScript 代码
-deno_core = { version = "0.271.0" }
+deno_core = { version = "0.272.0" }
 
 [dev-dependencies]
-reqwest = { version = "0.11.24" }
+reqwest = { version = "0.12.0" }
 
 [[example]]
 name = "rust_to_js"
