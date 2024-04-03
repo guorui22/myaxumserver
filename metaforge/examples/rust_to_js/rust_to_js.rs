@@ -1,3 +1,5 @@
+use std::env;
+use std::ops::Mul;
 // main.rs
 use std::rc::Rc;
 use std::time::Instant;
@@ -5,15 +7,91 @@ use chrono::expect;
 
 use deno_core::{Extension, FastString, JsRuntime, Op, op2, PollEventLoopOptions, v8};
 use deno_core::anyhow::Error;
-use deno_core::error::AnyError;
+use deno_core::error::{AnyError, generic_error};
 use deno_core::v8::Handle;
+use serde::{Deserialize, Serialize};
+use tonic::IntoRequest;
+use libdatabase::sqlx::ColumnIndex;
 use libtracing::error;
+
 #[tokio::main]
-async fn main() ->Result<(), deno_core::anyhow::Error>{
-    let string = call_js_file_03().await?;
+async fn main() -> Result<(), deno_core::anyhow::Error> {
+    let string = call_js_file_04().await?;
     println!("result: {:?}", string);
     Ok(())
 }
+
+// 运行一个自动执行的 JS 脚本
+pub async fn call_js_file_04() -> Result<String, deno_core::anyhow::Error> {
+    // 初始化扩展方法
+    let runjs_extension = Extension {
+        name: "my_ext",
+        ops: std::borrow::Cow::Borrowed(&[
+            op_test_data_in_out::DECL,
+            op_read_file::DECL,
+            op_write_file::DECL,
+            op_remove_file::DECL,
+            op_fetch::DECL,
+            integer_x_3::DECL,
+            float_x_3::DECL,
+            true_to_false::DECL,
+            vec_to_vec::DECL,
+            struct_to_struct::DECL,
+        ]),
+        ..Default::default()
+    };
+
+    // 为 js 运行时添加扩展接口
+    let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
+        module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
+        extensions: vec![runjs_extension],
+        ..Default::default()
+    });
+
+    // 初始化全局变量
+    js_runtime.execute_script("[runjs:runtime.js]", FastString::from_static(include_str!("./runtime.js")))?;
+
+    // let res = js_runtime.execute_script(
+    //     "call-back-to-rust",
+    //     FastString::from_static(include_str!("./async-case.js")))?;
+    let res = js_runtime.execute_script(
+        "call-back-to-rust",
+        r#"
+        (async ()=>{
+            let x1 = {
+                id:100,
+                name:"test"
+            };
+            let y1 = await runjs.struct_to_struct(x1);
+            console.log(y1);
+            // return y1;
+            return JSON.stringify(y1);
+        })();
+        "#)?;
+    let value = res.open(js_runtime.v8_isolate());
+    if (value.is_promise()) {
+        print!("yes it is a promise\n");
+    }
+    let resolve = js_runtime.resolve(res);
+    let promise_result = js_runtime.with_event_loop_promise(resolve, PollEventLoopOptions::default()).await;
+    let str = promise_result?.open(js_runtime.v8_isolate()).to_rust_string_lossy(&mut js_runtime.handle_scope());
+    dbg!(&str);
+    let str:mini = serde_json::from_str(&str)?;
+    dbg!(&str);
+
+    // let main_module = deno_core::resolve_path("/mnt/gr01/RustroverProjects/myaxumserver/metaforge/examples/rust_to_js/async-case.js", env::current_dir()?.as_path())?;
+    // let mod_id = js_runtime.load_main_es_module(&main_module).await?;
+    // let result = js_runtime.mod_evaluate(mod_id);
+    // js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
+    // let str = result.await?;
+
+    println!("Execution time: {} nanoseconds", Instant::now().duration_since(start_time).as_nanos());
+
+    dbg!(&str);
+
+    Ok("".into())
+}
+
 
 // 运行一个自动执行的 JS 脚本
 pub async fn call_js_file_03() -> Result<String, deno_core::anyhow::Error> {
@@ -38,7 +116,11 @@ pub async fn call_js_file_03() -> Result<String, deno_core::anyhow::Error> {
         hw
         "#)?;
     // 获取的 JS 执行结果转换为 Rust 字符串
-    let str = res.open(runtime.v8_isolate()).to_rust_string_lossy(&mut runtime.handle_scope());
+    // let str = res.open(runtime.v8_isolate()).to_rust_string_lossy(&mut runtime.handle_scope());
+    let resolve = runtime.resolve(res);
+    let promise_result = runtime.with_event_loop_promise(resolve, PollEventLoopOptions::default()).await;
+    let str = promise_result?.open(runtime.v8_isolate()).to_rust_string_lossy(&mut runtime.handle_scope());
+
     // 返回结果
     Ok(str)
 }
@@ -159,9 +241,9 @@ pub async fn do_has_param_func_01() -> String {
     // 方案-01
     // 时间更短，速度更快
     let res = js_runtime.execute_script(
-            "how-long-till-lunch.esm2",
-            "howLongUntilLunch(19, 30)")
-            .expect("error");
+        "how-long-till-lunch.esm2",
+        "howLongUntilLunch(19, 30)")
+        .expect("error");
 
     let str = res.open(js_runtime.v8_isolate())
         .to_rust_string_lossy(&mut js_runtime.handle_scope());
@@ -197,8 +279,6 @@ pub async fn do_has_param_func_01() -> String {
 }
 
 async fn run_js_func(file_path: &str) -> Result<(), AnyError> {
-
-
     let main_module = deno_core::resolve_path(file_path, &*std::env::current_dir().unwrap())?;
 
     let runjs_extension = Extension {
@@ -270,6 +350,43 @@ async fn run_js(file_path: &str) -> Result<(), Error> {
     js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
 
     result.await
+}
+
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct mini {
+    id: i64,
+    pub name: String
+}
+
+#[op2(async)]
+#[serde]
+pub async fn struct_to_struct(#[serde] mut input: mini) -> Result<mini, AnyError> {
+    input.name = "郭睿".into();
+    Ok(input)
+}
+
+#[op2(async)]
+#[serde]
+pub async fn vec_to_vec(#[serde] mut input: Vec<i32>) -> Result<Vec<i32>, AnyError> {
+    input.push(1000);
+    Ok(input)
+}
+
+#[op2(async)]
+pub async fn true_to_false(input: bool) -> Result<bool, AnyError> {
+    Ok(!input)
+}
+
+#[op2(async)]
+pub async fn float_x_3(input: f64) -> Result<f64, AnyError> {
+    Ok(input.mul(3f64))
+}
+
+// #[op2(fast)]
+#[op2(async)]
+pub async fn integer_x_3(input: i32) -> Result<i32, AnyError> {
+    input.checked_mul(3).ok_or(generic_error("error in integer_x_3."))
 }
 
 #[op2(async)]

@@ -28,6 +28,21 @@
         fetch: (url) => {
             return core.ops.op_fetch(url);
         },
+        struct_to_struct: (input) => {
+            return core.ops.struct_to_struct(input);
+        },
+        vec_to_vec: (input) => {
+            return core.ops.vec_to_vec(input);
+        },
+        true_to_false: (input) => {
+            return core.ops.true_to_false(input);
+        },
+        float_x_3: (input) => {
+            return core.ops.float_x_3(input);
+        },
+        integer_x_3: (input) => {
+            return core.ops.integer_x_3(input);
+        },
     };
 
 })(globalThis);
