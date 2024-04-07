@@ -16,12 +16,72 @@ use libtracing::error;
 
 #[tokio::main]
 async fn main() -> Result<(), deno_core::anyhow::Error> {
-    let string = call_js_file_04().await?;
+    let string = call_js_file_05().await?;
     println!("result: {:?}", string);
     Ok(())
 }
 
-// 运行一个自动执行的 JS 脚本
+// 执行JS文件中的异步函数
+pub async fn call_js_file_05() -> Result<String, deno_core::anyhow::Error> {
+    // 初始化扩展方法
+    let runjs_extension = Extension {
+        name: "my_ext",
+        ops: std::borrow::Cow::Borrowed(&[
+            op_test_data_in_out::DECL,
+            op_read_file::DECL,
+            op_write_file::DECL,
+            op_remove_file::DECL,
+            op_fetch::DECL,
+            integer_x_3::DECL,
+            float_x_3::DECL,
+            true_to_false::DECL,
+            vec_to_vec::DECL,
+            struct_to_struct::DECL,
+            struct_to_struct_01::DECL,
+        ]),
+        ..Default::default()
+    };
+
+    // 为 js 运行时添加扩展接口
+    let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
+        module_loader: Some(Rc::new(deno_core::FsModuleLoader)),
+        extensions: vec![runjs_extension],
+        ..Default::default()
+    });
+
+    // 初始化全局变量
+    js_runtime.execute_script("[runjs:runtime.js]", FastString::from_static(include_str!("./runtime.js")))?;
+
+    let res = js_runtime.execute_script(
+        "call-back-to-rust",
+        FastString::from_static(include_str!("./output_05.js")))?;
+
+    let res = js_runtime.execute_script(
+        "call-back-to-rust",
+        r#"
+        (async ()=>{
+            let y1 = await output_05.gr_struct();
+            return y1;
+        })();
+        "#)?;
+
+    let value = res.open(js_runtime.v8_isolate());
+    if (value.is_promise()) {
+        print!("yes it is a promise\n");
+    }
+
+    let resolve = js_runtime.resolve(res);
+    let promise_result = js_runtime.with_event_loop_promise(resolve, PollEventLoopOptions::default()).await;
+    let str = promise_result?.open(js_runtime.v8_isolate()).to_rust_string_lossy(&mut js_runtime.handle_scope());
+    dbg!(&str);
+    let str1: mini = serde_json::from_str(&str)?;
+    dbg!(&str1);
+
+    Ok(str)
+}
+
+
+// 执行JS文件中的同步函数
 pub async fn call_js_file_04() -> Result<String, deno_core::anyhow::Error> {
     // 初始化扩展方法
     let runjs_extension = Extension {
@@ -37,6 +97,7 @@ pub async fn call_js_file_04() -> Result<String, deno_core::anyhow::Error> {
             true_to_false::DECL,
             vec_to_vec::DECL,
             struct_to_struct::DECL,
+            struct_to_struct_01::DECL,
         ]),
         ..Default::default()
     };
@@ -51,45 +112,32 @@ pub async fn call_js_file_04() -> Result<String, deno_core::anyhow::Error> {
     // 初始化全局变量
     js_runtime.execute_script("[runjs:runtime.js]", FastString::from_static(include_str!("./runtime.js")))?;
 
-    // let res = js_runtime.execute_script(
-    //     "call-back-to-rust",
-    //     FastString::from_static(include_str!("./async-case.js")))?;
+    let res = js_runtime.execute_script(
+        "call-back-to-rust",
+        FastString::from_static(include_str!("./output_06.js")))?;
+
     let res = js_runtime.execute_script(
         "call-back-to-rust",
         r#"
-        (async ()=>{
-            let x1 = {
-                id:100,
-                name:"test"
-            };
-            let y1 = await runjs.struct_to_struct(x1);
-            console.log(y1);
-            // return y1;
-            return JSON.stringify(y1);
+        (()=>{
+            let y1 = output_06.gr_struct_01();
+            return y1;
         })();
         "#)?;
+
     let value = res.open(js_runtime.v8_isolate());
     if (value.is_promise()) {
         print!("yes it is a promise\n");
     }
+
     let resolve = js_runtime.resolve(res);
     let promise_result = js_runtime.with_event_loop_promise(resolve, PollEventLoopOptions::default()).await;
     let str = promise_result?.open(js_runtime.v8_isolate()).to_rust_string_lossy(&mut js_runtime.handle_scope());
     dbg!(&str);
-    let str:mini = serde_json::from_str(&str)?;
-    dbg!(&str);
+    let str1: mini = serde_json::from_str(&str)?;
+    dbg!(&str1);
 
-    // let main_module = deno_core::resolve_path("/mnt/gr01/RustroverProjects/myaxumserver/metaforge/examples/rust_to_js/async-case.js", env::current_dir()?.as_path())?;
-    // let mod_id = js_runtime.load_main_es_module(&main_module).await?;
-    // let result = js_runtime.mod_evaluate(mod_id);
-    // js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
-    // let str = result.await?;
-
-    println!("Execution time: {} nanoseconds", Instant::now().duration_since(start_time).as_nanos());
-
-    dbg!(&str);
-
-    Ok("".into())
+    Ok(str)
 }
 
 
@@ -356,13 +404,20 @@ async fn run_js(file_path: &str) -> Result<(), Error> {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct mini {
     id: i64,
-    pub name: String
+    pub name: String,
 }
 
 #[op2(async)]
 #[serde]
 pub async fn struct_to_struct(#[serde] mut input: mini) -> Result<mini, AnyError> {
     input.name = "郭睿".into();
+    Ok(input)
+}
+
+#[op2]
+#[serde]
+pub fn struct_to_struct_01(#[serde] mut input: mini) -> Result<mini, AnyError> {
+    input.name = "郭睿_01".into();
     Ok(input)
 }
 

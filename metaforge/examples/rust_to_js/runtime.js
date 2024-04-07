@@ -31,6 +31,9 @@
         struct_to_struct: (input) => {
             return core.ops.struct_to_struct(input);
         },
+        struct_to_struct_01: (input) => {
+            return core.ops.struct_to_struct_01(input);
+        },
         vec_to_vec: (input) => {
             return core.ops.vec_to_vec(input);
         },
