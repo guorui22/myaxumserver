@@ -148,7 +148,7 @@ pub async fn call_js_file_03() -> Result<String, deno_core::anyhow::Error> {
     // 从 JS 脚本加载函数
     let res = runtime.execute_script(
         "output_01",
-        include_str!("/mnt/gr02/RustroverProjects/metaforge_js/dist/output_01.js"))?;
+        FastString::from_static(include_str!("./output_01.js")))?;
     // 执行脚本里的函数，获取执行结果
     let res = runtime.execute_script(
         "output_01",
@@ -180,11 +180,11 @@ pub async fn call_js_file_02() -> Result<String, deno_core::anyhow::Error> {
     let mut runtime = JsRuntime::new(Default::default());
     // 从 JS 脚本加载函数
     let res = runtime.execute_script(
-        "output_02",
-        include_str!("/mnt/gr02/RustroverProjects/metaforge_js/dist/output_04.js"))?;
+        "output_04",
+        FastString::from_static(include_str!("./output_04.js")))?;
     // 执行脚本里的函数，获取执行结果
     let res = runtime.execute_script(
-        "output_02",
+        "output_04",
         r#"
         // output_04 是 output_04.js 里的一个对象，它在编译时就已经确定
         let hw = output_04.hello_world();
@@ -205,7 +205,7 @@ pub async fn call_js_file_01() -> Result<String, deno_core::anyhow::Error> {
     // 执行 JS 脚本
     let res = runtime.execute_script(
         "output_03",
-        include_str!("/mnt/gr02/RustroverProjects/metaforge_js/dist/output_03.js"))?;
+        FastString::from_static(include_str!("./output_03.js")))?;
     // 获取执行结果
     let str = res.open(runtime.v8_isolate()).to_rust_string_lossy(&mut runtime.handle_scope());
     // 返回结果
