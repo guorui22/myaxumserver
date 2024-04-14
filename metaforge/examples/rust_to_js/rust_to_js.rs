@@ -3,7 +3,6 @@ use std::ops::Mul;
 // main.rs
 use std::rc::Rc;
 use std::time::Instant;
-use chrono::expect;
 
 use deno_core::{Extension, FastString, JsRuntime, Op, op2, PollEventLoopOptions, v8};
 use deno_core::anyhow::Error;
@@ -14,10 +13,26 @@ use tonic::IntoRequest;
 use libdatabase::sqlx::ColumnIndex;
 use libtracing::error;
 
-#[tokio::main]
-async fn main() -> Result<(), deno_core::anyhow::Error> {
-    let string = call_js_file_05().await?;
-    println!("result: {:?}", string);
+// #[tokio::main]
+fn main() -> Result<(), deno_core::anyhow::Error> {
+
+    // let contents = tokio::fs::read_to_string("/mnt/gr01/RustroverProjects/myaxumserver/metaforge/examples/rust_to_js/log.txt").await?;
+    // dbg!(&contents);
+
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    if let Err(error) = runtime.block_on(call_js_file_05()) {
+        eprintln!("error: {error}");
+    }
+
+    // let string = call_js_file_05().await?;
+    // println!("result: {:?}", string);
+
+
+
+
     Ok(())
 }
 
@@ -60,13 +75,17 @@ pub async fn call_js_file_05() -> Result<String, deno_core::anyhow::Error> {
         "call-back-to-rust",
         r#"
         (async ()=>{
-            let y1 = await output_05.gr_struct();
-            return y1;
+            // let y1 = await output_05.gr_struct();
+            if(!!(output_05.jsReadFile)){
+                console.log("has a jsReadFile!!!")
+            }
+            let y1 = output_05.jsReadFile("/mnt/gr01/RustroverProjects/myaxumserver/metaforge/examples/rust_to_js/log.txt");
+            return "qqqqqqqqqqqqq";
         })();
         "#)?;
 
     let value = res.open(js_runtime.v8_isolate());
-    if (value.is_promise()) {
+    if value.is_promise() {
         print!("yes it is a promise\n");
     }
 
@@ -74,8 +93,8 @@ pub async fn call_js_file_05() -> Result<String, deno_core::anyhow::Error> {
     let promise_result = js_runtime.with_event_loop_promise(resolve, PollEventLoopOptions::default()).await;
     let str = promise_result?.open(js_runtime.v8_isolate()).to_rust_string_lossy(&mut js_runtime.handle_scope());
     dbg!(&str);
-    let str1: mini = serde_json::from_str(&str)?;
-    dbg!(&str1);
+    // let str1: mini = serde_json::from_str(&str)?;
+    // dbg!(&str1);
 
     Ok(str)
 }
@@ -126,7 +145,7 @@ pub async fn call_js_file_04() -> Result<String, deno_core::anyhow::Error> {
         "#)?;
 
     let value = res.open(js_runtime.v8_isolate());
-    if (value.is_promise()) {
+    if value.is_promise() {
         print!("yes it is a promise\n");
     }
 
@@ -264,7 +283,7 @@ JSON.stringify(arr)
 }
 
 
-pub async fn do_has_param_func_01() -> String {
+pub async fn do_has_param_func_01() -> Result<String, deno_core::anyhow::Error> {
     let runjs_extension = Extension {
         name: "my_ext",
         ops: std::borrow::Cow::Borrowed(&[op_test_data_in_out::DECL, op_read_file::DECL, op_write_file::DECL, op_remove_file::DECL, op_fetch::DECL]),
@@ -280,22 +299,13 @@ pub async fn do_has_param_func_01() -> String {
 
     js_runtime.execute_script("[runjs:runtime.js]", FastString::from_static(include_str!("./runtime.js"))).expect("error");
 
-    let ss = js_runtime.execute_script(
+    let res = js_runtime.execute_script(
         "how-long-till-lunch.esm1",
-        include_str!("how-long-till-lunch.umd.js"))
-        .expect("error");
+        FastString::from_static(include_str!("./my_module.mjs")))?;
 
     let start_time = Instant::now();
-    // 方案-01
-    // 时间更短，速度更快
-    let res = js_runtime.execute_script(
-        "how-long-till-lunch.esm2",
-        "howLongUntilLunch(19, 30)")
-        .expect("error");
-
     let str = res.open(js_runtime.v8_isolate())
         .to_rust_string_lossy(&mut js_runtime.handle_scope());
-    // str
 
     // 方案-02
     let start_time = Instant::now();
@@ -323,7 +333,7 @@ pub async fn do_has_param_func_01() -> String {
 
     // 打印执行时间（以纳秒为单位）
     println!("Execution time: {} nanoseconds", duration.as_nanos());
-    str
+    Ok(str)
 }
 
 async fn run_js_func(file_path: &str) -> Result<(), AnyError> {
@@ -447,8 +457,10 @@ pub async fn integer_x_3(input: i32) -> Result<i32, AnyError> {
 #[op2(async)]
 #[string]
 pub async fn op_read_file(#[string] path: String) -> Result<String, AnyError> {
-    let contents = tokio::fs::read_to_string(path).await?;
-    Ok(contents)
+    dbg!(&path);
+    let contents = tokio::fs::read_to_string(path).await;
+    dbg!(&contents);
+    Ok(contents.unwrap())
 }
 
 #[op2(async)]
@@ -466,7 +478,7 @@ pub fn op_remove_file(#[string] path: String) -> Result<(), AnyError> {
 #[op2(async)]
 #[string]
 pub async fn op_fetch(#[string] url: String) -> Result<String, AnyError> {
-    let body = reqwest::get(url).await?.text().await?;
+    let body = "reqwest::get(url).await?.text().await?".to_string();
     Ok(body)
 }
 

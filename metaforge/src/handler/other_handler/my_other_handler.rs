@@ -1,9 +1,23 @@
+use std::path::Path;
+use std::rc::Rc;
+use std::thread::current;
 use axum::http::{HeaderMap, StatusCode};
 use axum_macros::debug_handler;
+
+use serde::de::IntoDeserializer;
+use libdatabase::sqlx::ColumnIndex;
 
 /// 测试函数
 #[debug_handler]
 pub async fn index() -> String {
+
+    // let mut script = jsandbox::Script::from_string("function add(a, b) { return a + b; }")
+    //     .build()
+    //     .unwrap();
+    // let result: u32 = script.call("add", (1, 2)).await.unwrap();
+
+
+    // format!("Welcome to you! at {}", rst)
     format!("Welcome to you! at {}", chrono::Local::now())
 }
 

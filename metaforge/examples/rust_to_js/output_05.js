@@ -1,1 +1,1 @@
-var output_05=function(t){"use strict";return t.gr_struct=async function(){let t=await runjs.struct_to_struct({id:100,name:"test"});return JSON.stringify(t)},t}({});
+var output_05=function(e){"use strict";return e.jsReadFile=async function(e){let o="";try{console.log("Read from a file",e),o=await runjs.readFile(e),console.log("Read from a file. "+o)}catch(o){console.error("Unable to read file",e,o)}return o},e}({});
