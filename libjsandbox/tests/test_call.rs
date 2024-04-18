@@ -36,13 +36,13 @@ async fn call_06() -> Result<(), AnyError> {
     }
 
     // 显示导入的内置函数
-    let script_code = r#"
-    import("ext:core/ops").then((imported) => {{
-        console.log(imported);
-    }})
-    "#.to_string();
-    worker.execute_script("ext:<anon>", script_code.into())?;
-    worker.js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
+    // let script_code = r#"
+    // import("ext:core/ops").then((imported) => {{
+    //     console.log(imported);
+    // }})
+    // "#.to_string();
+    // worker.execute_script("ext:<anon>", script_code.into())?;
+    // worker.js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
 
     // 调用自定义函数
     let func = "output_01.for_in_object";   // 自定义函数名
