@@ -35,6 +35,6 @@ fn op_return(state: &mut OpState, #[serde] args: serde_json::Value) {
 deno_core::extension!(
     script_runtime,
     ops = [op_return],
-    esm_entry_point = "ext:script_runtime/tests/runtime.js",
-    esm = ["tests/runtime.js"],
+    esm_entry_point = "ext:script_runtime/src/runtime.js",
+    esm = ["src/runtime.js"],
 );
