@@ -12,7 +12,7 @@ axum-macros = { version = "0.4", features = [] } # 可以使用#[debug_handler]�
 tokio = { version = "1", features = ["full"] } # Rust 异步运行时
 # Tower HTTP 中间件依赖
 tower = { version = "0.4", features = ["limit"] } # ConcurrencyLimitLayer 服务并发限制中间件支持
-tower-http = { version = "0.5", features = ["full"] } # HTTP 中间件支持
+tower-http = { version = "0.5.2", features = ["full"] } # HTTP 中间件支持
 # 序列化与反序列化依赖
 serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 serde_json = "1.0"# JSON 序列化与反序列化
