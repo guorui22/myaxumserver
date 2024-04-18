@@ -32,4 +32,9 @@ fn op_return(state: &mut OpState, #[serde] args: serde_json::Value) {
     state.resource_table.add(ReturnValue { value: args });
 }
 
-deno_core::extension!(script_runtime, ops = [op_return]);
+deno_core::extension!(
+    script_runtime,
+    ops = [op_return],
+    esm_entry_point = "ext:script_runtime/tests/runtime.js",
+    esm = ["tests/runtime.js"],
+);

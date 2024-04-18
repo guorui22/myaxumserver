@@ -15,15 +15,15 @@ use libjsandbox::script::script_runtime;
 #[tokio::test]
 async fn call_06() -> Result<(), AnyError> {
 
-    let js_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime.js");
-    let main_module = ModuleSpecifier::from_file_path(js_path).unwrap();
+    // let js_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime.js");
+    // let main_module = ModuleSpecifier::from_file_path(js_path).unwrap();
 
     let mut worker = MainWorker::bootstrap_from_options(
-        main_module.clone(),
+        url::Url::parse("data:text/plain,").unwrap(),
         PermissionsContainer::new(Permissions::allow_all()),
         WorkerOptions {
             module_loader: Rc::new(FsModuleLoader),
-            extensions: vec![script_runtime::init_ops()],
+            extensions: vec![script_runtime::init_ops_and_esm()],
             bootstrap: BootstrapOptions {
                 enable_testing_features: true,
                 ..Default::default()
@@ -31,6 +31,9 @@ async fn call_06() -> Result<(), AnyError> {
             ..Default::default()
         },
     );
+
+    worker.run_event_loop(false).await?;
+
 
     let _r1 = worker.execute_script("", FastString::from_static(include_str!("output_01.js")))?;
 
@@ -45,15 +48,15 @@ async fn call_06() -> Result<(), AnyError> {
         });
     }
 
-    let script_code = r#"
-    var op_return;
-    import("ext:core/ops").then((imported) => {{
-        op_return = imported.op_return;
-        console.log(imported);
-    }})
-    "#.to_string();
-    worker.execute_script("ext:<anon>", script_code.into())?;
-    worker.js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
+    // let script_code = r#"
+    // var op_return;
+    // import("ext:core/ops").then((imported) => {{
+    //     op_return = imported.op_return;
+    //     console.log(imported);
+    // }})
+    // "#.to_string();
+    // worker.execute_script("ext:<anon>", script_code.into())?;
+    // worker.js_runtime.run_event_loop(PollEventLoopOptions::default()).await?;
 
     let func = "output_01.for_in_object";
     worker.execute_script(
@@ -61,10 +64,10 @@ async fn call_06() -> Result<(), AnyError> {
         format!(
             r#"
                 (async () => {{
-                    console.log(Deno[Deno.internal].core.ops);
                     console.log('===============================');
+                    console.log(globalThis);
                     console.log('===============================');
-                    op_return(
+                    globalThis.op_return(
                         {func}.constructor.name === 'AsyncFunction' ? await {func}({a}) : {func}({a})
                     );
                 }})();
