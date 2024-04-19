@@ -12,6 +12,7 @@ use axum::{Extension, Router};
 use bigdecimal::num_traits::real::Real;
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::mpsc;
+use tokio::sync::mpsc::Sender;
 use tokio::task::JoinHandle;
 use tower::limit::ConcurrencyLimitLayer;
 use tower::ServiceBuilder;
@@ -45,6 +46,7 @@ use metaforge::handler::{
     mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
     user_main, UploadPath,
 };
+use metaforge::MyArgs;
 
 fn main() {
     // 创建一个新的运行时1
@@ -64,7 +66,7 @@ fn main() {
         .unwrap();
 
     // 创建通道，用于双向通信
-    let (tx, mut rx) = mpsc::channel::<String>(10);
+    let (tx, mut rx) = mpsc::channel::<MyArgs>(10);
 
 
     // 在第二个运行时中执行异步任务
@@ -90,8 +92,11 @@ fn main() {
 
                 // 接收消息
                 let _ = tokio::task::spawn(async move {
-                    while let Some(msg) = rx.recv().await {
+                    while let Some(MyArgs{ sender, mut msg }) = rx.recv().await {
                         println!("Received: {}", msg);
+                        msg.push_str(" from runtime2");
+                        sender.send(msg).await.unwrap();
+                        sender.closed().await;
                     }
                 }).await;
             }
@@ -113,7 +118,7 @@ fn main() {
 
 }
 
-async fn main01(tx: mpsc::Sender<String>) -> Result<(), String> {
+async fn main01(tx: Sender<MyArgs>) -> Result<(), String> {
     // 如果监听到 ctrl+c 信号就退出应用
     ctrlc::set_handler(|| {
         info!("监听到 CTRL + C 操作, 退出应用程序.");
