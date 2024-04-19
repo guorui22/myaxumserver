@@ -1,5 +1,6 @@
+use std::ops::Sub;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use deno_core::{FastString, PollEventLoopOptions, serde_json, url};
 use deno_core::error::AnyError;
@@ -7,10 +8,38 @@ use deno_runtime::permissions::{Permissions, PermissionsContainer};
 use deno_runtime::worker::{MainWorker, WorkerOptions};
 
 use libjsandbox::script;
-use libjsandbox::script::script_runtime;
+use libjsandbox::script::{Script, script_runtime};
 
 #[tokio::test]
-async fn call_06() -> Result<(), AnyError> {
+async fn call_01() -> Result<(), AnyError> {
+
+    let start_time = Instant::now();
+
+    // 创建脚本实例
+    let mut script = Script::build()?
+        .permissions(Permissions::allow_all())
+        .timeout(Duration::from_secs(3));
+
+    for _ in 0..100 {
+
+        // 导入自定义函数
+        script.add_script(include_str!("output_01.js"))?;
+
+        // 调用自定义函数
+        let result:serde_json::Value = script.call("output_01.for_in_object", (serde_json::json!({"a1":1000, "a2": 2000}), )).await?;
+
+        // 检查函数返回值
+        dbg!(&result.to_string());
+        assert_eq!(&result.to_string(), "[1000,2000]");
+    }
+
+    println!("Execution time: {} ms", (Instant::now().sub(start_time)).as_millis());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn call_02() -> Result<(), AnyError> {
 
     // 初始化工作线程
     let mut worker = MainWorker::bootstrap_from_options(
