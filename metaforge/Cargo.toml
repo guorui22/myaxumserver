@@ -45,7 +45,7 @@ libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
 # 执行 JavaScript & TypeScript 代码
-deno_core = { version = "0.272.0" }
+libjsandbox = { path = "../libjsandbox" }
 #deno_runtime = { version = "0.146.0" }
 #jsandbox = "0.3"
 

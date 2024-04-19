@@ -20,20 +20,17 @@ async fn call_01() -> Result<(), AnyError> {
         .permissions(Permissions::allow_all())
         .timeout(Duration::from_secs(3));
 
-    for _ in 0..100 {
+    // 导入自定义函数
+    script.add_script(include_str!("output_01.js"))?;
 
-        // 导入自定义函数
-        script.add_script(include_str!("output_01.js"))?;
+    // 调用自定义函数
+    let result: serde_json::Value = script.call("output_01.for_in_object", (serde_json::json!({"a1":1000, "a2": 2000}), )).await?;
 
-        // 调用自定义函数
-        let result:serde_json::Value = script.call("output_01.for_in_object", (serde_json::json!({"a1":1000, "a2": 2000}), )).await?;
+    // 检查函数返回值
+    dbg!(&result.to_string());
+    assert_eq!(&result.to_string(), "[1000,2000]");
 
-        // 检查函数返回值
-        dbg!(&result.to_string());
-        assert_eq!(&result.to_string(), "[1000,2000]");
-    }
-
-    println!("Execution time: {} ms", (Instant::now().sub(start_time)).as_millis());
+    println!("Execution time: {} ms", start_time.elapsed().as_micros());
 
     Ok(())
 }

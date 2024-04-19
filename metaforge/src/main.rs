@@ -1,11 +1,17 @@
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::thread::spawn;
+use std::time::{Duration, Instant};
 
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::routing::{get, get_service, post};
 use axum::{Extension, Router};
-use tokio::spawn;
+use bigdecimal::num_traits::real::Real;
+use tokio::runtime::{Builder, Runtime};
+use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 use tower::limit::ConcurrencyLimitLayer;
 use tower::ServiceBuilder;
@@ -23,6 +29,7 @@ use libdatabase::{
 };
 use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
+use libjsandbox::script::{Permissions, Script};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[cfg(not(debug_assertions))]
@@ -39,14 +46,80 @@ use metaforge::handler::{
     user_main, UploadPath,
 };
 
-#[tokio::main]
-async fn main() -> Result<(), String> {
+fn main() {
+    // 创建一个新的运行时1
+    let rt1 = Builder::new_multi_thread()
+        .worker_threads(2)
+        .thread_name("runtime1-worker")
+        .enable_all()
+        .build()
+        .unwrap();
+
+    // 创建一个新的运行时2
+    let rt2 = Builder::new_multi_thread()
+        .worker_threads(2)
+        .thread_name("runtime2-worker")
+        .enable_all()
+        .build()
+        .unwrap();
+
+    // 创建通道，用于双向通信
+    let (tx, mut rx) = mpsc::channel::<String>(10);
+
+
+    // 在第二个运行时中执行异步任务
+    let h1 = spawn(move ||{
+        rt2.block_on(async {
+            let start_time = Instant::now();
+
+            {
+                // JS 脚本执行器
+                let mut script = Script::build().unwrap()
+                    .permissions(Permissions::allow_all())
+                    .timeout(Duration::from_secs(3));
+
+                // 导入自定义函数
+                script.add_script(include_str!("output_01.js")).expect("导入自定义函数失败");
+
+                // 调用自定义函数
+                let result: serde_json::Value = script.call("output_01.for_in_object", (serde_json::json!({"a1":1000, "a2": 2000}), )).await.expect("调用自定义函数失败");
+
+                // 检查函数返回值
+                dbg!(&result.to_string());
+                assert_eq!(&result.to_string(), "[1000,2000]");
+
+                // 接收消息
+                let _ = tokio::task::spawn(async move {
+                    while let Some(msg) = rx.recv().await {
+                        println!("Received: {}", msg);
+                    }
+                }).await;
+            }
+
+            println!("Time taken by runtime2: {:?}", start_time.elapsed().as_nanos());
+        })
+    });
+
+    // 在第一个运行时中执行异步任务
+    let h2 = spawn(move ||{
+        rt1.block_on(async {
+            let start_time = Instant::now();
+            let _ = main01(tx).await;
+            println!("Time taken by runtime1: {:?}", start_time.elapsed());
+        });
+    });
+
+    thread::park();
+
+}
+
+async fn main01(tx: mpsc::Sender<String>) -> Result<(), String> {
     // 如果监听到 ctrl+c 信号就退出应用
     ctrlc::set_handler(|| {
         info!("监听到 CTRL + C 操作, 退出应用程序.");
         std::process::exit(0);
     })
-    .unwrap_or_else(|err| panic!("{}", err.to_string()));
+        .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
@@ -56,20 +129,20 @@ async fn main() -> Result<(), String> {
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
-    let ini_main_mn_log_path = ini_main
+        let ini_main_mn_log_path = ini_main
         .get("mn_log_path")
         .ok_or("MN_LOG_PATH not found".to_string())?;
     #[cfg(not(debug_assertions))]
-    let ini_main_mn_log_name = ini_main
+        let ini_main_mn_log_name = ini_main
         .get("mn_log_name")
         .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
-    let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
+        let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
         get_my_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
 
     // debug模式下，日志输出到标准输出
     #[cfg(debug_assertions)]
-    let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
+        let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
 
     // 初始化日志等级、日志输出位置、日志格式(定制和筛选日志)
     let ini_log_level = ini_main.get("mn_log_level").map(|s| s.to_uppercase());
@@ -155,6 +228,7 @@ async fn main() -> Result<(), String> {
                 .layer(Extension(test_mysql_db_01_pool))
                 // 在多个请求间共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
+                .layer(Extension(tx))
                 // 在多个请求间共享文件上传后在服务器上的保存路径
                 .layer(Extension(UploadPath {
                     upload_path: ini_main
@@ -190,7 +264,7 @@ async fn main() -> Result<(), String> {
         .get("mn_grpc_port")
         .map_or("29029", |p| p)
         .to_string();
-    let grpc_thread: JoinHandle<Result<(), String>> = spawn(async move {
+    let grpc_thread: JoinHandle<Result<(), String>> = tokio::task::spawn(async move {
         // 启动 grpc 服务
         let addr = format!("{host}:{port}");
         info!("GRPC 服务器启动成功: http://{addr}");
@@ -226,7 +300,7 @@ async fn main() -> Result<(), String> {
         .get("mn_http_port")
         .map_or("5000", |p| p)
         .to_string();
-    let web_thread: JoinHandle<Result<(), String>> = spawn(async move {
+    let web_thread: JoinHandle<Result<(), String>> = tokio::task::spawn(async move {
         // 启动 Http 服务
         let addr = format!("{host}:{port}");
         info!("Http 服务器启动成功: http://{addr}");
