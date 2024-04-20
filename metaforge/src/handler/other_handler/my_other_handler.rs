@@ -15,6 +15,7 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use libdatabase::sqlx::ColumnIndex;
 use libdatabase::{GrMySQLPool, TestMySqlDb01};
 use libjsandbox::script::Script;
+use libtracing::debug;
 use crate::MyArgs;
 
 /// 测试函数
@@ -28,6 +29,7 @@ pub async fn index(Extension(tx): Extension<Sender<MyArgs>>) -> String {
 
     // 接收消息
     if let Some(msg) = rxx.recv().await {
+        debug!(msg);
         format!("Welcome to you! {} at {}", msg, chrono::Local::now())
     } else {
         format!("Welcome to you! at {}", chrono::Local::now())

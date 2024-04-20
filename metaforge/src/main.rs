@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -41,6 +42,7 @@ use libtracing::get_my_stdout_writer;
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 #[allow(unused_imports)]
 use libtracing::{get_my_format, info, trace, tracing_subscriber, Level};
+use libtracing::debug;
 use metaforge::handler::{
     get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
     mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
@@ -49,29 +51,36 @@ use metaforge::handler::{
 use metaforge::MyArgs;
 
 fn main() {
-    // 创建一个新的运行时1
-    let rt1 = Builder::new_multi_thread()
-        .worker_threads(2)
-        .thread_name("runtime1-worker")
+
+    // 如果监听到 ctrl+c 信号就退出应用
+    ctrlc::set_handler(|| {
+        info!("监听到 CTRL + C 操作, 退出应用程序.");
+        std::process::exit(0);
+    }).unwrap();
+
+    // 创建主服务运行时
+    let runtime_main = Builder::new_multi_thread()
+        .worker_threads(num_cpus::get())
+        .thread_name("runtime-main-worker")
         .enable_all()
         .build()
         .unwrap();
 
-    // 创建一个新的运行时2
-    let rt2 = Builder::new_multi_thread()
-        .worker_threads(2)
+    // 创建 Javascript 服务运行时
+    let runtime_js = Builder::new_multi_thread()
+        .worker_threads(max(num_cpus::get() / 2, 1))
         .thread_name("runtime2-worker")
         .enable_all()
         .build()
         .unwrap();
 
-    // 创建通道，用于双向通信
-    let (tx, mut rx) = mpsc::channel::<MyArgs>(10);
+    // 创建主服务运行时向 Javascript 运行时发送消息的单向通道
+    let (sender_main, mut receiver_js) = mpsc::channel::<MyArgs>(num_cpus::get());
 
 
     // 在第二个运行时中执行异步任务
-    let h1 = spawn(move ||{
-        rt2.block_on(async {
+    let _h1 = spawn(move || {
+        runtime_js.block_on(async {
             let start_time = Instant::now();
 
             {
@@ -92,8 +101,8 @@ fn main() {
 
                 // 接收消息
                 let _ = tokio::task::spawn(async move {
-                    while let Some(MyArgs{ sender, mut msg }) = rx.recv().await {
-                        println!("Received: {}", msg);
+                    while let Some(MyArgs { sender, mut msg }) = receiver_js.recv().await {
+                        debug!("Received: {}", msg);
                         msg.push_str(" from runtime2");
                         sender.send(msg).await.unwrap();
                         sender.closed().await;
@@ -106,25 +115,18 @@ fn main() {
     });
 
     // 在第一个运行时中执行异步任务
-    let h2 = spawn(move ||{
-        rt1.block_on(async {
+    let _h2 = spawn(move || {
+        runtime_main.block_on(async {
             let start_time = Instant::now();
-            let _ = main01(tx).await;
+            let _ = main01(sender_main).await;
             println!("Time taken by runtime1: {:?}", start_time.elapsed());
         });
     });
 
     thread::park();
-
 }
 
 async fn main01(tx: Sender<MyArgs>) -> Result<(), String> {
-    // 如果监听到 ctrl+c 信号就退出应用
-    ctrlc::set_handler(|| {
-        info!("监听到 CTRL + C 操作, 退出应用程序.");
-        std::process::exit(0);
-    })
-        .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;

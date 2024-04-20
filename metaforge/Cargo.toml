@@ -46,8 +46,8 @@ libproto = { path = "../libproto" }
 tonic = { version = "0.11" }
 # 执行 JavaScript & TypeScript 代码
 libjsandbox = { path = "../libjsandbox" }
-#deno_runtime = { version = "0.146.0" }
-#jsandbox = "0.3"
+# 获取 CPU 内核数量
+num_cpus = { version = "1.16.0" }
 
 [dev-dependencies]
 #reqwest = { version = "0.12.0" }
