@@ -1,8 +1,12 @@
 use std::thread;
 use std::time::Duration;
 use deno_core::{error, FastString, op2, OpState, PollEventLoopOptions, Resource, serde, serde_json, url};
+use deno_runtime::deno_crypto::rand;
+use deno_runtime::deno_crypto::rand::distributions::Alphanumeric;
+use deno_runtime::deno_crypto::rand::Rng;
 use deno_runtime::permissions::PermissionsContainer;
 use deno_runtime::worker::{MainWorker, WorkerOptions};
+use uuid::{uuid, Uuid};
 use crate::args::Args;
 
 /// 返回值
@@ -94,11 +98,25 @@ impl Script {
         // 获取工作线程可变引用
         let worker = self.worker.as_mut().unwrap();
         // 执行脚本以导入自定义函数
-        worker.execute_script("", FastString::from_static(code))?;
+        worker.execute_script( Script::generate_random_string(32), FastString::from_static(code))?;
         // 返回脚本实例
         Ok(())
     }
 
+    fn generate_random_string(length: usize) -> &'static str {
+        // 生成随机字符串
+        let random_string: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect();
+
+        // 将 String 转换为 &'static str
+        let static_str: &'static str = Box::leak(random_string.into_boxed_str());
+
+        // 返回随机字符串
+        static_str
+    }
     /// 调用脚本实例中的函数<br/>
     /// func: 函数名<br/>
     /// args: 函数参数

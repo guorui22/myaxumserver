@@ -9,3 +9,5 @@ edition = "2021"
 tokio = "1"
 deno_core = "0.275.0"
 deno_runtime = "0.155.0"
+uuid = { version = "1.8.0", features = ["v4"] }
+rand = "0.8.5"

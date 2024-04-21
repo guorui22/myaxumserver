@@ -1,7 +1,9 @@
 use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{fs, thread};
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::thread::spawn;
 use std::time::{Duration, Instant};
 
@@ -48,7 +50,7 @@ use metaforge::handler::{
     mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
     user_main, UploadPath,
 };
-use metaforge::MyArgs;
+use metaforge::model::message::JsRsMsg;
 
 fn main() {
 
@@ -68,50 +70,42 @@ fn main() {
 
     // 创建 Javascript 服务运行时
     let runtime_js = Builder::new_multi_thread()
-        .worker_threads(max(num_cpus::get() / 2, 1))
-        .thread_name("runtime2-worker")
+        .worker_threads(1)
+        .thread_name("runtime-js-worker")
         .enable_all()
         .build()
         .unwrap();
 
-    // 创建主服务运行时向 Javascript 运行时发送消息的单向通道
-    let (sender_main, mut receiver_js) = mpsc::channel::<MyArgs>(num_cpus::get());
+    // 创建主服务运行时向 Javascript 运行时发送消息的 mpsc 单向通道
+    let (sender_main, mut receiver_js) = mpsc::channel::<JsRsMsg>(num_cpus::get());
 
 
-    // 在第二个运行时中执行异步任务
+    // 在 Javascript 运行时中启动 js 脚本执行服务
     let _h1 = spawn(move || {
         runtime_js.block_on(async {
-            let start_time = Instant::now();
 
-            {
+            // 接收消息
+            while let Some(JsRsMsg { sender, js_name, js_method_name, js_method_args }) = receiver_js.recv().await {
+                info!("Received: {}", js_method_args.to_string());
+
+                // fs::read(format!("{js_name}.js").as_str()).expect("文件读取失败！");
+
+                // 导入包含自定义函数的 js 脚本
+                // let js_string = fs::read_to_string(format!("{js_name}.js")).expect("文件读取失败！");
+                // let js_content = js_string.clone().as_str();
+
                 // JS 脚本执行器
                 let mut script = Script::build().unwrap()
                     .permissions(Permissions::allow_all())
                     .timeout(Duration::from_secs(3));
-
-                // 导入自定义函数
-                script.add_script(include_str!("output_01.js")).expect("导入自定义函数失败");
+                script.add_script(include_str!("output_01.js")).map_err(|err| format!("添加脚本出错：{:?}", err)).unwrap();
 
                 // 调用自定义函数
-                let result: serde_json::Value = script.call("output_01.for_in_object", (serde_json::json!({"a1":1000, "a2": 2000}), )).await.expect("调用自定义函数失败");
+                let result: serde_json::Value = script.call(format!("{js_name}.{js_method_name}").as_str(), (js_method_args, )).await.expect("调用自定义函数失败");
 
-                // 检查函数返回值
-                dbg!(&result.to_string());
-                assert_eq!(&result.to_string(), "[1000,2000]");
-
-                // 接收消息
-                let _ = tokio::task::spawn(async move {
-                    while let Some(MyArgs { sender, mut msg }) = receiver_js.recv().await {
-                        debug!("Received: {}", msg);
-                        msg.push_str(" from runtime2");
-                        sender.send(msg).await.unwrap();
-                        sender.closed().await;
-                    }
-                }).await;
+                sender.send(result).unwrap();
             }
-
-            println!("Time taken by runtime2: {:?}", start_time.elapsed().as_nanos());
-        })
+        });
     });
 
     // 在第一个运行时中执行异步任务
@@ -126,7 +120,7 @@ fn main() {
     thread::park();
 }
 
-async fn main01(tx: Sender<MyArgs>) -> Result<(), String> {
+async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
 
     // 读取服务器初始化参数
     let ini = init_server_config()?;
