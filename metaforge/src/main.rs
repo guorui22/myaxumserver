@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::{fs, thread};
 use std::cell::RefCell;
+use std::fs::Permissions;
 use std::rc::Rc;
 use std::thread::spawn;
 use std::time::{Duration, Instant};
@@ -33,7 +34,6 @@ use libdatabase::{
 };
 use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
-use libjsandbox::script::{Permissions, Script, script_runtime};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[cfg(not(debug_assertions))]
@@ -81,34 +81,34 @@ fn main() {
 
 
     // 在 Javascript 运行时中启动 js 脚本执行服务
-    let _h1 = spawn(move || {
-        runtime_js.block_on(async {
-
-            // 接收消息
-            while let Some(JsRsMsg { sender, js_name, js_method_name, js_method_args }) = receiver_js.recv().await {
-                info!("Received: {}", js_method_args.to_string());
-
-                // fs::read(format!("{js_name}.js").as_str()).expect("文件读取失败！");
-
-                // 导入包含自定义函数的 js 脚本
-                // let js_string = fs::read_to_string(format!("{js_name}.js")).expect("文件读取失败！");
-                // let js_content = js_string.clone().as_str();
-
-                // 启动异步任务
-                // JS 脚本执行器
-                let mut script = Script::build().unwrap()
-                    .permissions(Permissions::allow_all())
-                    .timeout(Duration::from_secs(3));
-
-                script.add_script(include_str!("output_01.js")).map_err(|err| format!("添加脚本出错：{:?}", err)).unwrap();
-
-                // 调用自定义函数
-                let result: serde_json::Value = script.call(format!("{js_name}.{js_method_name}").as_str(), (js_method_args, )).await.expect("调用自定义函数失败");
-
-                if let Ok(_) = sender.send(result).map_err(|err| format!("发送消息出错：{:?}", err)) {};
-            }
-        });
-    });
+    // let _h1 = spawn(move || {
+    //     runtime_js.block_on(async {
+    //
+    //         // 接收消息
+    //         while let Some(JsRsMsg { sender, js_name, js_method_name, js_method_args }) = receiver_js.recv().await {
+    //             info!("Received: {}", js_method_args.to_string());
+    //
+    //             // fs::read(format!("{js_name}.js").as_str()).expect("文件读取失败！");
+    //
+    //             // 导入包含自定义函数的 js 脚本
+    //             // let js_string = fs::read_to_string(format!("{js_name}.js")).expect("文件读取失败！");
+    //             // let js_content = js_string.clone().as_str();
+    //
+    //             // 启动异步任务
+    //             // JS 脚本执行器
+    //             let mut script = Script::build().unwrap()
+    //                 .permissions(Permissions::allow_all())
+    //                 .timeout(Duration::from_secs(3));
+    //
+    //             script.add_script(include_str!("output_01.js")).map_err(|err| format!("添加脚本出错：{:?}", err)).unwrap();
+    //
+    //             // 调用自定义函数
+    //             let result: serde_json::Value = script.call(format!("{js_name}.{js_method_name}").as_str(), (js_method_args, )).await.expect("调用自定义函数失败");
+    //
+    //             if let Ok(_) = sender.send(result).map_err(|err| format!("发送消息出错：{:?}", err)) {};
+    //         }
+    //     });
+    // });
 
     // 在第一个运行时中执行异步任务
     let _h2 = spawn(move || {

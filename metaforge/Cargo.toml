@@ -45,7 +45,8 @@ libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
 # 执行 JavaScript & TypeScript 代码
-libjsandbox = { path = "../libjsandbox" }
+tera = { version = "1" }
+anyhow = { version = "1.0.82" }
 # 获取 CPU 内核数量
 num_cpus = { version = "1.16.0" }
 

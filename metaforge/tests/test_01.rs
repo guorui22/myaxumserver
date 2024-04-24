@@ -1,10 +1,13 @@
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
+use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
+use serde_json::to_string;
+use tera::Tera;
+use tokio::io::AsyncReadExt;
 
-#[test]
-fn deno_process() {
-
+#[tokio::test]
+async fn deno_process() {
     #[derive(Debug, Serialize, Deserialize)]
     struct Foo {
         a: i32,
@@ -12,7 +15,7 @@ fn deno_process() {
         c: i32,
     }
 
-    let (a,b,c) = (11,22,33);
+    let (a, b, c) = (11, 22, 33);
     let f1 = Foo { a, b, c };
 
     // 启动 Deno 进程
@@ -65,4 +68,78 @@ console.log(JSON.stringify(arr));
     println!("Deno output: {}", output);
     println!("Deno error: {}", error_output);
     println!("Deno exited with: {}", deno_result);
+}
+
+#[tokio::test]
+async fn deno_process_with_args() {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Foo {
+        a: i32,
+        b: i32,
+        c: i32,
+    }
+
+    let (a, b, c) = (11, 22, 33);
+    let f1 = Foo { a, b, c };
+
+    let args = serde_json::json!(f1);
+    let script = r#"
+import _ from 'npm:lodash@4.17.21';
+
+function process(obj: any) {
+    let arr = [];
+    _.forIn(obj, function(value, key) {
+        arr.push(value);
+    });
+    return arr;
+}
+    "#;
+
+    let result = js_deno_cli(String::from(script), args).unwrap();
+    dbg!(&result.to_string());
+}
+
+pub fn js_deno_cli(script: String, args: serde_json::Value) -> anyhow::Result<serde_json::Value> {
+    let mut deno_process = Command::new("deno")
+        .arg("run")
+        .arg("--allow-all")
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
+
+    let mut tera = Tera::default();
+    let script = format!(r#"
+        {script}
+
+        let result = process({{{{args}}}});
+        console.log(JSON.stringify(result));
+    "#);
+    dbg!(&script);
+    tera.add_raw_template("script", script.as_str())?;
+    let mut context = tera::Context::new();
+    context.insert("args", args.to_string().as_str());
+    let rendered_script = tera.render("script", &context)?;
+
+    dbg!(&rendered_script);
+
+    if let Some(mut stdin) = deno_process.stdin.take() {
+        stdin.write_all(rendered_script.as_bytes())?;
+    }
+    let is_ok = !deno_process.wait()?.success();
+    if is_ok {
+        let mut string_buffer = String::new();
+        if deno_process.stderr.as_mut().ok_or(anyhow!("Failed to get stderr."))?.read_to_string(&mut string_buffer)? > 0 {
+            return Err(anyhow!(string_buffer));
+        }
+    }
+    if let Some(stdout) = deno_process.stdout.as_mut() {
+        let mut string_buffer = String::new();
+        if stdout.read_to_string(&mut string_buffer)? > 0 {
+            return Ok(serde_json::json!(string_buffer));
+        }
+    }
+
+    Ok(serde_json::Value::Null)
 }
