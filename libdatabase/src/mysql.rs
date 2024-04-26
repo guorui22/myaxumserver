@@ -3,6 +3,7 @@ use sqlx::{MySql, MySqlPool, Pool};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::time::Duration;
+use anyhow::anyhow;
 
 /// 自定义数据库连接池类型 TestMySqlDb01
 #[derive(Clone, Debug)]
@@ -37,7 +38,7 @@ impl<T> std::ops::Deref for GrMySQLPool<T> {
 // MySQL 数据库连接池初始化
 pub async fn init_mysql_conn_pool<T>(
     param_map: &HashMap<String, String>,
-) -> Result<GrMySQLPool<T>, String> {
+) -> Result<GrMySQLPool<T>, anyhow::Error> {
     let def_val = &"".to_string();
     let mysql_pool: Pool<MySql> = MySqlPoolOptions::new()
         .max_connections(32)
@@ -57,7 +58,7 @@ pub async fn init_mysql_conn_pool<T>(
             .as_str(),
         )
         .await
-        .map_err(|err| err.to_string())?;
+        .map_err(|err| anyhow!(err))?;
 
     Ok(GrMySQLPool::new(mysql_pool))
 }

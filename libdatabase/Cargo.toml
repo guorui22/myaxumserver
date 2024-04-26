@@ -15,4 +15,5 @@ serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 # Redis 数据库连接池
 deadpool-redis = { version = "0.14", features = ["serde"] }
 # 日志处理（Tracing框架）
-libtracing = { path = "../libtracing" } # 日志处理
+libtracing = { path = "../libtracing" }
+anyhow = "1.0.82" # 日志处理

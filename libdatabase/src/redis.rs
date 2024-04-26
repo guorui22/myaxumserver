@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use anyhow::anyhow;
 
 use deadpool_redis::{Config, Connection, Pool, Runtime};
 use libtracing::error;
@@ -38,7 +39,7 @@ impl<T> std::ops::Deref for RedisPool<T> {
 pub async fn init_redis_conn_pool(
     db_name: &str,
     param_map: &HashMap<String, String>,
-) -> Result<Pool, String> {
+) -> Result<Pool, anyhow::Error> {
     let host_default = &String::from("127.0.0.1");
     let host = param_map.get("RD_HOST").unwrap_or(host_default);
     let port_default = &String::from("6379");
@@ -46,7 +47,7 @@ pub async fn init_redis_conn_pool(
     let pool = Config::from_url(format!("redis://{host}:{port}"))
         .create_pool(Some(Runtime::Tokio1))
         .map_or_else(
-            |err| Err(format!("Redis 数据库连接池({}) is {}", db_name, err)),
+            |err| Err(anyhow!("Redis 数据库连接池({}) is {}", db_name, err)),
             Ok,
         )?;
     Ok(pool)

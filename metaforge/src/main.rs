@@ -1,19 +1,21 @@
-use std::cmp::max;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::{fs, thread};
 use std::cell::RefCell;
+use std::cmp::max;
+use std::collections::HashMap;
 use std::fs::Permissions;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use std::thread::spawn;
 use std::time::{Duration, Instant};
+use anyhow::anyhow;
 
+use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::routing::{get, get_service, post};
-use axum::{Extension, Router};
 use bigdecimal::num_traits::real::Real;
+use serde_json::to_string;
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Sender;
@@ -29,30 +31,31 @@ use tower_http::trace::TraceLayer;
 
 use libconfig::init_server_config;
 use libdatabase::{
-    init_mysql_conn_pool, init_redis_conn_pool, GrMySQLPool, Pool, Redis01, RedisPool,
+    GrMySQLPool, init_mysql_conn_pool, init_redis_conn_pool, Pool, Redis01, RedisPool,
     TestMySqlDb01,
 };
 use libglobal_request_id::MyMakeRequestId;
 use libgrpc::{Calculator, Login};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
+#[allow(unused_imports)]
+use libtracing::{get_my_format, info, Level, trace, tracing_subscriber};
+use libtracing::debug;
 #[cfg(not(debug_assertions))]
 use libtracing::get_my_file_writer;
 #[cfg(debug_assertions)]
 use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
-#[allow(unused_imports)]
-use libtracing::{get_my_format, info, trace, tracing_subscriber, Level};
-use libtracing::debug;
 use metaforge::handler::{
     get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
-    mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, user_login,
-    user_main, UploadPath,
+    mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath,
+    user_login, user_main,
 };
 use metaforge::model::message::JsRsMsg;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
 
     // 如果监听到 ctrl+c 信号就退出应用
     ctrlc::set_handler(|| {
@@ -60,75 +63,11 @@ fn main() {
         std::process::exit(0);
     }).unwrap();
 
-    // 创建主服务运行时
-    let runtime_main = Builder::new_multi_thread()
-        .worker_threads(num_cpus::get())
-        .thread_name("runtime-main-worker")
-        .enable_all()
-        .build()
-        .unwrap();
-
-    // 创建 Javascript 服务运行时
-    let runtime_js = Builder::new_multi_thread()
-        .worker_threads(1)
-        .thread_name("runtime-js-worker")
-        .enable_all()
-        .build()
-        .unwrap();
-
-    // 创建主服务运行时向 Javascript 运行时发送消息的 mpsc 单向通道
-    let (sender_main, mut receiver_js) = mpsc::channel::<JsRsMsg>(num_cpus::get());
-
-
-    // 在 Javascript 运行时中启动 js 脚本执行服务
-    // let _h1 = spawn(move || {
-    //     runtime_js.block_on(async {
-    //
-    //         // 接收消息
-    //         while let Some(JsRsMsg { sender, js_name, js_method_name, js_method_args }) = receiver_js.recv().await {
-    //             info!("Received: {}", js_method_args.to_string());
-    //
-    //             // fs::read(format!("{js_name}.js").as_str()).expect("文件读取失败！");
-    //
-    //             // 导入包含自定义函数的 js 脚本
-    //             // let js_string = fs::read_to_string(format!("{js_name}.js")).expect("文件读取失败！");
-    //             // let js_content = js_string.clone().as_str();
-    //
-    //             // 启动异步任务
-    //             // JS 脚本执行器
-    //             let mut script = Script::build().unwrap()
-    //                 .permissions(Permissions::allow_all())
-    //                 .timeout(Duration::from_secs(3));
-    //
-    //             script.add_script(include_str!("output_01.js")).map_err(|err| format!("添加脚本出错：{:?}", err)).unwrap();
-    //
-    //             // 调用自定义函数
-    //             let result: serde_json::Value = script.call(format!("{js_name}.{js_method_name}").as_str(), (js_method_args, )).await.expect("调用自定义函数失败");
-    //
-    //             if let Ok(_) = sender.send(result).map_err(|err| format!("发送消息出错：{:?}", err)) {};
-    //         }
-    //     });
-    // });
-
-    // 在第一个运行时中执行异步任务
-    let _h2 = spawn(move || {
-        runtime_main.block_on(async {
-            let start_time = Instant::now();
-            let _ = main01(sender_main).await;
-            println!("Time taken by runtime1: {:?}", start_time.elapsed());
-        });
-    });
-
-    thread::park();
-}
-
-async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
-
     // 读取服务器初始化参数
     let ini = init_server_config()?;
     let ini_main: &HashMap<String, String> = ini
         .get("main")
-        .ok_or("MAIN section not found".to_string())?;
+        .ok_or(anyhow!("MAIN section not found"))?;
 
     // release模式下，日志输出到文件
     #[cfg(not(debug_assertions))]
@@ -169,7 +108,7 @@ async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
     // 获取配置文件中的 MYSQL_01 配置信息
     let ini_mysql_01 = ini
         .get("mysql_01")
-        .ok_or(format!("{} section not found", "MYSQL_01"))?;
+        .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
     let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
         init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
@@ -177,7 +116,7 @@ async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
     // 获取配置文件中的 REDIS_01 配置信息
     let ini_redis_01 = ini
         .get("redis_01")
-        .ok_or("REDIS_01 section not found".to_string())?;
+        .ok_or(anyhow!("REDIS_01 section not found"))?;
     // 初始化 REDIS_01 数据库连接池
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
 
@@ -231,12 +170,11 @@ async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
                 .layer(Extension(test_mysql_db_01_pool))
                 // 在多个请求间共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
-                .layer(Extension(tx))
                 // 在多个请求间共享文件上传后在服务器上的保存路径
                 .layer(Extension(UploadPath {
                     upload_path: ini_main
                         .get("mn_upload_path")
-                        .ok_or("获取文件上传路径出错。".to_string())?
+                        .ok_or(anyhow!("获取文件上传路径出错."))?
                         .to_string(),
                 }))
                 // 启用数据压缩
@@ -319,8 +257,8 @@ async fn main01(tx: Sender<JsRsMsg>) -> Result<(), String> {
 
     // 启动 GRPC 和 HTTP 服务
     let (_, _) = (
-        grpc_thread.await.map_err(|err| format!("{:?}", err))?,
-        web_thread.await.map_err(|err| format!("{:?}", err))?,
+        grpc_thread.await.map_err(|err| anyhow!(err))?,
+        web_thread.await.map_err(|err| anyhow!(err))?,
     );
 
     // 退出应用程序
