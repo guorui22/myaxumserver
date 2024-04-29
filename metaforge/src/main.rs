@@ -28,6 +28,7 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+use libauth::Jwt;
 
 use libconfig::init_server_config;
 use libdatabase::{
@@ -120,6 +121,13 @@ async fn main() -> Result<(), anyhow::Error> {
     // 初始化 REDIS_01 数据库连接池
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
 
+    // 初始化JWT生成器
+    let jwt_map = ini.get("jwt").ok_or(anyhow!("JWT section not found"))?;
+    let jwt_secret = jwt_map.get("jwt_secret").ok_or(anyhow!("JWT_SECRET not found"))?;
+    let jwt_iss = jwt_map.get("jwt_iss").ok_or(anyhow!("JWT_ISS not found"))?;
+    let jwt_exp: i64 = jwt_map.get("jwt_exp").ok_or(anyhow!("JWT_EXP not found"))?.parse()?;
+    let jwt = Jwt::new(jwt_secret.to_string(), jwt_iss.to_string());
+
     // 创建请求到服务之间的路由 router
     let x_request_id = HeaderName::from_static("x-request-id"); // 全局请求 ID 的请求头名称
     let router = Router::new()
@@ -211,7 +219,10 @@ async fn main() -> Result<(), anyhow::Error> {
         info!("GRPC 服务器启动成功: http://{addr}");
 
         let calculater_srv = Calculator;
-        let login_srv = Login;
+        let login_srv = Login {
+            jwt,
+            jwt_exp,
+        };
 
         tonic::transport::Server::builder()
             .add_service(CalculatorServiceServer::with_interceptor(

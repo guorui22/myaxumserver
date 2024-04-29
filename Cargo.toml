@@ -13,7 +13,7 @@ members = [
     "libgrpc",
     "libwasm",
     "libhybrid",
-    "metaforge", "arpy-axum-server", "arpy-axum-common",
+    "metaforge",
 ]
 
 [profile.release.package.libwasm]

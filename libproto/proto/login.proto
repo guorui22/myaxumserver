@@ -7,7 +7,7 @@ option java_multiple_files = true;
 option java_package = "com.sunnercn.grpc.login";
 option java_outer_classname = "Login";
 
-// -- 登录（请求消息、响应消息）
+// -- 登录（请求消息、响应消息、响应消息体）
 message LoginRequest {
   string usercode = 1;
   string password = 2;
@@ -15,9 +15,14 @@ message LoginRequest {
 message LoginReply {
   int32 status = 1;
   string message = 2;
-  optional string usercode = 3;
-  optional string username = 4;
+  optional LoginReplyData data = 3;
 }
+message LoginReplyData {
+  optional string usercode = 1;
+  optional string username = 2;
+  optional string jwt = 3;
+}
+
 
 // -- 定义rpc服务接口
 service LoginService {

@@ -36,6 +36,7 @@ pub fn get_auth_user(code: &str, pwd: &str) -> Option<&'static serde_json::Value
 /// JWT 密钥
 /// secret   密钥
 /// iss      签发者
+#[derive(Debug, Clone)]
 pub struct Jwt {
     pub secret: String,
     pub iss: String,
@@ -47,12 +48,12 @@ impl Jwt {
         Self { secret, iss }
     }
     /// 生成 Claims 结构体的实例
-    /// id       用户唯一ID
+    /// usercode   用户唯一编号
     /// name     用户名
     /// life     过期时间长度，单位秒
-    pub fn new_claims(&self, id: String, name: String, life: i64) -> Claims {
+    pub fn new_claims(&self, usercode: String, name: String, life: i64) -> Claims {
         Claims {
-            code: id,
+            code: usercode,
             name,
             iss: self.iss.clone(),
             exp: Jwt::calc_claims_exp(life),
