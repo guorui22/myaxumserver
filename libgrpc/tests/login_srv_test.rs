@@ -23,5 +23,5 @@ async fn test_do_login() {
     let resp = client.do_login(request).await.unwrap();
     let reply = resp.into_inner();
     dbg!(&reply);
-    assert!(reply.username.unwrap().len() > 0);
+    assert_eq!(reply.status, 0);
 }
