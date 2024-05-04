@@ -16,7 +16,7 @@ pub use topic_server::*;
 /// 检查请求头中的 token 是否正确
 pub fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {
     let token: MetadataValue<_> = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ".parse().unwrap();
-
+    dbg!(&req.metadata().get("authorization"));
     match req.metadata().get("authorization") {
         Some(t) if token == t => Ok(req),
         _ => Err(Status::unauthenticated("No valid auth token")),
