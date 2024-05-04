@@ -7,21 +7,21 @@ use libproto::topic_service_server::TopicServiceServer;
 use sqlx::MySqlPool;
 use std::env;
 use std::sync::Arc;
+use libauth::Jwt;
 
 #[tokio::main]
 async fn main() {
     let addr = "0.0.0.0:29029";
     println!("grpc-srv run at: {}", addr);
 
-    // let dsn = env::var("MYSQL_DSN").unwrap_or("mysql://root:6@Q29sX+38yz4Rep*^@172.17.0.1:4000/myblog".to_string());
-    // let pool = MySqlPool::connect(&dsn).await.unwrap();
-    // let arc_pool = Arc::new(pool);
+    let jwt_exp: i64 = 3600;
+    let jwt = Jwt::new("不负信赖".to_string(), "圣农集团".to_string());
 
-    // let admin_srv = Admin::new(arc_pool.clone());
-    // let category_srv = Category::new(arc_pool.clone());
-    // let topic_srv = Topic::new(arc_pool);
     let calculater_srv = Calculator;
-    let login_srv = Login;
+    let login_srv = Login {
+        jwt,
+        jwt_exp,
+    };
 
     tonic::transport::Server::builder()
         // .add_service(AdminServiceServer::with_interceptor(admin_srv, libgrpc::check_auth))
