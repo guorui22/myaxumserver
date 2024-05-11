@@ -160,6 +160,7 @@ pub mod calculator_service_server {
             request: tonic::Request<super::Input>,
         ) -> std::result::Result<tonic::Response<super::Output>, tonic::Status>;
         /// Server streaming response type for the findFactors method.
+        #[allow(non_camel_case_types)]
         type findFactorsStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<super::Output, tonic::Status>,
             >

@@ -1,14 +1,8 @@
-use std::collections::HashMap;
-
 use axum::http::HeaderMap;
 use axum::{Extension, Json};
 use axum_macros::debug_handler;
-use chrono::offset::Local;
-use serde_json::json;
 
-use libdatabase::sqlx::types::JsonValue;
-use libdatabase::sqlx::{Column, Row, TypeInfo};
-use libdatabase::{get_mysql_column_value, sqlx, DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
+use libdatabase::{DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
 use libglobal_request_id::get_request_id;
 use libtracing::info;
 

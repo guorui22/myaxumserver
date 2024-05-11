@@ -1,24 +1,13 @@
-use std::path::Path;
-use std::rc::Rc;
-use std::sync::{Arc, mpsc, Mutex};
-use std::thread;
-use std::thread::current;
-use std::time::Duration;
 use axum::Extension;
 use axum::http::{HeaderMap, StatusCode};
 use axum_macros::debug_handler;
-use serde::de::IntoDeserializer;
-use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
-use tokio::sync::mpsc::{Receiver, Sender};
-use libdatabase::sqlx::ColumnIndex;
-use libdatabase::{GrMySQLPool, TestMySqlDb01};
-use libtracing::{debug, info};
+use tokio::sync::mpsc::Sender;
+
 use crate::model::message::JsRsMsg;
 
 /// 测试函数
 #[debug_handler]
-pub async fn index(Extension(sender_main): Extension<Sender<JsRsMsg>>) -> String {
+pub async fn index(Extension(_): Extension<Sender<JsRsMsg>>) -> String {
     format!("Welcome to you! at {}", chrono::Local::now())
 }
 

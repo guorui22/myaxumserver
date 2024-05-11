@@ -1,19 +1,16 @@
-use sqlx::mysql::MySqlPoolOptions;
-use sqlx::{Column, MySql, MySqlPool, Pool, Row};
 use std::collections::HashMap;
-use std::env::args;
 use std::marker::PhantomData;
 use std::time::Duration;
+
 use anyhow::anyhow;
+use chrono::Local;
 use sea_orm::JsonValue;
-use sea_orm::sea_query::extension::postgres::Extension;
 use serde_json::json;
 use sqlparser::ast::{Ident, ObjectName, Statement, TableFactor};
-use sqlparser::dialect::{GenericDialect, MySqlDialect};
+use sqlparser::dialect::{MySqlDialect};
 use sqlparser::parser::Parser;
-use libtracing::info;
-use crate::DbBatchQueryArgs;
-use chrono::Local;
+use sqlx::{Column, MySql, MySqlPool, Pool, Row};
+use sqlx::mysql::MySqlPoolOptions;
 use sqlx::TypeInfo;
 
 /// 自定义数据库连接池类型 TestMySqlDb01
@@ -224,7 +221,7 @@ pub async fn mysql_transaction<T>(conn: GrMySQLPool<T>, sql_vec: Vec<String>, is
         // 如果开启TTL，则执行TTL SQL，记录数据的完整生命周期
         if is_ttl {
             let ttl_sql = mysql_sql_ttl(sql.clone()).await?;
-            let exec_rst_ttl = sqlx::query(ttl_sql.as_str())
+            let _exec_rst_ttl = sqlx::query(ttl_sql.as_str())
                 .execute(&mut *db_transaction)
                 .await
                 .map_err(|err| anyhow!("数据库TTL SQL执行失败: {}", err))?;
@@ -247,13 +244,12 @@ pub async fn mysql_transaction<T>(conn: GrMySQLPool<T>, sql_vec: Vec<String>, is
 
 /// mysql 全生命周期 SQL 语句生成
 pub async fn mysql_sql_ttl(sql: String) -> Result<String, anyhow::Error> {
-
-    let mut binding = Parser::parse_sql(&MySqlDialect {}, sql.as_str())
+    let binding = Parser::parse_sql(&MySqlDialect {}, sql.as_str())
         .map_err(|err| anyhow!("SQL解析失败: {}", err))?;
     let mut statement = binding.into_iter().next().ok_or_else(|| anyhow!("SQL解析失败"))?;
 
     // 检查语句是否是INSERT类型
-    if let Statement::Insert(ref mut insert) = statement {
+    return if let Statement::Insert(ref mut insert) = statement {
         let new_table_name = format!("{}_ttl", insert.table_name);
         insert.table_name = ObjectName(vec![Ident { value: new_table_name, quote_style: None }]);
         // 将修改后的AST转换回SQL字符串
@@ -261,7 +257,7 @@ pub async fn mysql_sql_ttl(sql: String) -> Result<String, anyhow::Error> {
         Ok(ttl_insert_sql)
     }
     // 检查语句是否是UPDATE类型
-    else if let Statement::Update { ref table, assignments, from, ref selection, returning } = statement {
+    else if let Statement::Update { ref table, assignments: _, from: _, ref selection, returning: _ } = statement {
         let table_names = match &table.relation {
             TableFactor::Table { name, .. } => {
                 let new_table_name = format!("{}_ttl", name);
@@ -279,5 +275,5 @@ pub async fn mysql_sql_ttl(sql: String) -> Result<String, anyhow::Error> {
         Ok(ttl_insert_sql)
     } else {
         Err(anyhow!("SQL解析失败"))
-    }
+    };
 }
