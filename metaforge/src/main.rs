@@ -7,14 +7,15 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread::spawn;
 use std::time::{Duration, Instant};
-use anyhow::anyhow;
 
+use anyhow::anyhow;
 use axum::{Extension, Router};
 use axum::extract::DefaultBodyLimit;
 use axum::handler::Handler;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::routing::{get, get_service, post};
 use bigdecimal::num_traits::real::Real;
+use lazy_static::lazy_static;
 use serde_json::to_string;
 use tokio::runtime::{Builder, Runtime};
 use tokio::sync::mpsc;
@@ -28,7 +29,6 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
-use libauth::Jwt;
 
 use libconfig::init_server_config;
 use libdatabase::{
@@ -36,7 +36,6 @@ use libdatabase::{
     TestMySqlDb01,
 };
 use libglobal_request_id::MyMakeRequestId;
-use libgrpc::{Calculator, Login};
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[allow(unused_imports)]
@@ -48,12 +47,14 @@ use libtracing::get_my_file_writer;
 use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use metaforge::grpc_server::{Calculator, Login};
 use metaforge::handler::{
     get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
     mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath,
     user_login, user_main,
 };
-use metaforge::model::message::JsRsMsg;
+use metaforge::model::global_const::{APP_INI, JWT, JWT_EXP};
+use metaforge::util::grpc_check_jwt::check_auth;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -64,9 +65,8 @@ async fn main() -> Result<(), anyhow::Error> {
         std::process::exit(0);
     }).unwrap();
 
-    // 读取服务器初始化参数
-    let ini = init_server_config()?;
-    let ini_main: &HashMap<String, String> = ini
+    // 读取服务器 main 参数
+    let ini_main: &HashMap<String, String> = APP_INI
         .get("main")
         .ok_or(anyhow!("MAIN section not found"))?;
 
@@ -107,7 +107,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .init();
 
     // 获取配置文件中的 MYSQL_01 配置信息
-    let ini_mysql_01 = ini
+    let ini_mysql_01 = APP_INI
         .get("mysql_01")
         .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
     // 初始化 MYSQL_01 数据库连接池
@@ -115,18 +115,11 @@ async fn main() -> Result<(), anyhow::Error> {
         init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
     // 获取配置文件中的 REDIS_01 配置信息
-    let ini_redis_01 = ini
+    let ini_redis_01 = APP_INI
         .get("redis_01")
         .ok_or(anyhow!("REDIS_01 section not found"))?;
     // 初始化 REDIS_01 数据库连接池
     let redis_01_pool: Pool = init_redis_conn_pool("REDIS_01", ini_redis_01).await?;
-
-    // 初始化JWT生成器
-    let jwt_map = ini.get("jwt").ok_or(anyhow!("JWT section not found"))?;
-    let jwt_secret = jwt_map.get("jwt_secret").ok_or(anyhow!("JWT_SECRET not found"))?;
-    let jwt_iss = jwt_map.get("jwt_iss").ok_or(anyhow!("JWT_ISS not found"))?;
-    let jwt_exp: i64 = jwt_map.get("jwt_exp").ok_or(anyhow!("JWT_EXP not found"))?.parse()?;
-    let jwt = Jwt::new(jwt_secret.to_string(), jwt_iss.to_string());
 
     // 创建请求到服务之间的路由 router
     let x_request_id = HeaderName::from_static("x-request-id"); // 全局请求 ID 的请求头名称
@@ -175,7 +168,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 // 限制请求体大小为 100MB
                 .layer(RequestBodyLimitLayer::new(100 * 1024 * 1024))
                 // 在多个请求间共享MySQL01数据库连接池
-                .layer(Extension(test_mysql_db_01_pool))
+                .layer(Extension(test_mysql_db_01_pool.clone()))
                 // 在多个请求间共享Redis01数据库连接池
                 .layer(Extension(RedisPool::<Redis01>::new(redis_01_pool)))
                 // 在多个请求间共享文件上传后在服务器上的保存路径
@@ -220,18 +213,18 @@ async fn main() -> Result<(), anyhow::Error> {
 
         let calculater_srv = Calculator;
         let login_srv = Login {
-            jwt,
-            jwt_exp,
+            jwt: &*JWT,
+            jwt_exp: &*JWT_EXP,
+            db_pool: test_mysql_db_01_pool.clone(),
         };
 
         tonic::transport::Server::builder()
             .add_service(CalculatorServiceServer::with_interceptor(
                 calculater_srv,
-                libgrpc::check_auth,
+                check_auth,
             ))
-            .add_service(LoginServiceServer::with_interceptor(
+            .add_service(LoginServiceServer::new(
                 login_srv,
-                libgrpc::check_auth,
             ))
             .serve(
                 addr.parse()

@@ -4,14 +4,15 @@ use axum::async_trait;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
-use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::Authorization;
+use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::Cookie;
 use axum_extra::TypedHeader;
 use chrono::{Local, LocalResult, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::{Jwt, JWT, TOKEN_NAME_FOR_COOKIE};
+use crate::auth::{Jwt, TOKEN_NAME_FOR_COOKIE};
+use crate::model::global_const::JWT;
 
 /// 经过认证的用户信息
 /// id      用户唯一ID
@@ -25,6 +26,17 @@ pub struct Claims {
     pub iss: String,
     pub exp: i64,
 }
+
+impl Claims {
+    /// 验证 Claims 是否过期
+    /// true      过期
+    /// false     未过期
+    pub fn is_expired(&self) -> bool {
+        let now = Local::now().timestamp();
+        now > self.exp
+    }
+}
+
 
 /// 实现 Display trait 可以保证此结构体可以直接打印输出
 impl Display for Claims {
@@ -41,8 +53,8 @@ impl Display for Claims {
 /// 实现 FromRequestParts trait 可以保证此结构体可以直接从请求中提取出来
 #[async_trait]
 impl<S> FromRequestParts<S> for Claims
-where
-    S: Send + Sync,
+    where
+        S: Send + Sync,
 {
     type Rejection = (StatusCode, String);
 

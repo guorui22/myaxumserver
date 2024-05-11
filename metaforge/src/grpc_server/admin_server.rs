@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use libdatabase::sqlx;
 
 use sqlx::{MySqlPool, Row};
 
@@ -7,6 +8,7 @@ use libproto::{
     CreateAdminRequest, EditAdminReply, EditAdminRequest, GetAdminReply, GetAdminRequest,
     ListAdminReply, ListAdminRequest, ToggleAdminReply, ToggleAdminRequest,
 };
+use crate::auth::password;
 
 pub struct Admin {
     pub pool: Arc<MySqlPool>,

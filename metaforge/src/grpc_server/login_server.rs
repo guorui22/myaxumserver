@@ -1,10 +1,10 @@
 use libproto::login_service_server::LoginService;
 use libproto::{LoginReply, LoginReplyData, LoginRequest};
 use tonic::{Request, Response, Status};
-use libauth::Jwt;
+use crate::auth::Jwt;
 
 pub struct Login<T: Clone + Send + Sync + 'static> {
-    pub jwt: Jwt,
+    pub jwt: &'static Jwt,
     pub jwt_exp: &'static i64,
     pub db_pool: T,
 }

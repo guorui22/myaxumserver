@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use serde_json::json;
 use std::collections::HashMap;
 
-use crate::{AuthError, Claims};
+use crate::auth::{AuthError, Claims};
 
 /// 测试用数据: Token 过期时间，单位秒
 pub const TOKEN_EXP: i64 = 1200;
@@ -20,8 +20,6 @@ lazy_static! {
         }));
         map
     };
-    /// 测试用数据: JWT密钥
-    pub static ref JWT: Jwt = Jwt::new("不负信赖".to_string(), "圣农集团".to_string());
 }
 
 /// 测试方法：从 USER_MAP 中获取用户对象
@@ -89,4 +87,5 @@ impl Jwt {
             .map_err(|err| AuthError::InvalidToken(err.to_string()))?;
         Ok(token_data.claims)
     }
+
 }

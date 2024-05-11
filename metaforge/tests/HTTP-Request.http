@@ -18,8 +18,8 @@ Accept: application/json, text/plain, */*
 
 {
   "str_sql_array": [
-    "UPDATE sys_user SET user_name='郭睿01' where user_id=1",
-    "UPDATE sys_user SET user_name='郭睿02' where user_id=1"
+    "INSERT INTO sys_user VALUES ('10000', '07788', '郭睿', '123581321',0, '2024-05-10 12:38:51','07788'),('10001', '07799', '郭紫姝', '123581321',0, '2024-05-10 12:38:52','07788')",
+    "UPDATE sys_user SET user_name='郭睿_1',submit_time=now(), submit_user='07788' WHERE id='10000'"
   ],
   "str_node_env": "prd"
 }

@@ -28,6 +28,7 @@
       <sourceFolder url="file://$MODULE_DIR$/metaforge/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libjsandbox/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libjsandbox/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/libdatabase/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/myfront/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
