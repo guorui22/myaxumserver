@@ -3,9 +3,10 @@ use libproto::{LoginReply, LoginReplyData, LoginRequest};
 use tonic::{Request, Response, Status};
 use crate::auth::Jwt;
 
+#[derive(Clone, Debug)]
 pub struct Login<T: Clone + Send + Sync + 'static> {
-    pub jwt: &'static Jwt,
-    pub jwt_exp: &'static i64,
+    pub jwt: Jwt,
+    pub jwt_exp: i64,
     pub db_pool: T,
 }
 
@@ -17,7 +18,7 @@ impl<T: Clone + Send + Sync + 'static> LoginService for Login<T> {
     ) -> Result<Response<LoginReply>, Status> {
         let input = request.into_inner();
         let jwt = &self.jwt;
-        let claims = jwt.new_claims(input.usercode.clone(), "郭睿".to_string(), *self.jwt_exp);
+        let claims = jwt.new_claims(input.usercode.clone(), "郭睿".to_string(), self.jwt_exp);
         let token = jwt.token(&claims).map_err(|err| Status::internal(err.to_string()))?;
 
         let output_data = LoginReplyData {

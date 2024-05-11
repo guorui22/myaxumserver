@@ -197,8 +197,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
         let calculater_srv = Calculator;
         let login_srv = Login {
-            jwt: &*JWT,
-            jwt_exp: &*JWT_EXP,
+            jwt: JWT.clone(),
+            jwt_exp: JWT_EXP.clone(),
             db_pool: test_mysql_db_01_pool.clone(),
         };
 
