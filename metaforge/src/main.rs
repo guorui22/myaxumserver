@@ -31,6 +31,7 @@ use libtracing::get_my_file_writer;
 use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use metaforge::auth::grpc_check_auth;
 use metaforge::grpc_server::{Calculator, Login};
 use metaforge::handler::{
     get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
@@ -38,7 +39,6 @@ use metaforge::handler::{
     user_login, user_main,
 };
 use metaforge::model::global_const::{APP_INI, JWT, JWT_EXP};
-use metaforge::util::grpc_check_jwt::check_auth;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -205,7 +205,7 @@ async fn main() -> Result<(), anyhow::Error> {
         tonic::transport::Server::builder()
             .add_service(CalculatorServiceServer::with_interceptor(
                 calculater_srv,
-                check_auth,
+                grpc_check_auth,
             ))
             .add_service(LoginServiceServer::new(
                 login_srv,
