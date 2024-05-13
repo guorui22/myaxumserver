@@ -7,7 +7,7 @@ use crate::model::message::JsRsMsg;
 
 /// 测试函数
 #[debug_handler]
-pub async fn index(Extension(_): Extension<Sender<JsRsMsg>>) -> String {
+pub async fn index() -> String {
     format!("Welcome to you! at {}", chrono::Local::now())
 }
 
