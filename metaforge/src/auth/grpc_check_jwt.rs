@@ -7,10 +7,10 @@ pub fn grpc_check_auth(req: Request<()>) -> Result<Request<()>, Status> {
         Some(t) if {
             let jwt = t.to_str().map_err(|_|Status::unauthenticated("不是有效的 JWT Token。"))?.split_whitespace().collect::<Vec<&str>>()[1];
             let claims = JWT.verify_and_get(jwt).map_err(|_|Status::unauthenticated("JWT Token 验证失败。"))?;
-            return if claims.is_expired() {
-                Err(Status::unauthenticated("JWT Token 已过期。"))
+            if claims.is_expired() {
+                return Err(Status::unauthenticated("JWT Token 已过期。"));
             } else {
-                Err(Status::unauthenticated("JWT Token 已过期。"))
+                true
             }
         } => Ok(req),
         _ => Err(Status::unauthenticated("请求头中没有 authorization 字段。")),
