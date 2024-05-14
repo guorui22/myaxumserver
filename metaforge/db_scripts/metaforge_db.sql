@@ -34,6 +34,6 @@ INSERT INTO metaforge_db.sys_user (id,user_code,user_name,user_password,status,s
 	 ('10001','07799','郭紫姝','123581321',0,'2024-05-10 20:38:52','07788');
 
 -- 系统用户数据 TTL
-INSERT INTO metaforge_db.sys_user (id,user_code,user_name,user_password,status,submit_time,submit_user) VALUES
+INSERT INTO metaforge_db.sys_user_ttl (id,user_code,user_name,user_password,status,submit_time,submit_user) VALUES
 	 ('10000','07788','郭睿_1','123581321',0,'2024-05-10 18:12:52','07788'),
 	 ('10001','07799','郭紫姝','123581321',0,'2024-05-10 20:38:52','07788');
