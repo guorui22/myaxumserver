@@ -11,7 +11,7 @@ use axum_extra::TypedHeader;
 use chrono::{Local, LocalResult, TimeZone};
 use serde::{Deserialize, Serialize};
 
-use crate::auth::{Jwt, TOKEN_NAME_FOR_COOKIE};
+use crate::auth::{JwtSecret, TOKEN_NAME_FOR_COOKIE};
 use crate::model::global_const::JWT;
 
 /// 经过认证的用户信息
@@ -85,7 +85,7 @@ impl<S> FromRequestParts<S> for Claims
 
         // Check the token expiration
         let exp = if let LocalResult::Single(expire_datetime) =
-            Local.timestamp_opt(Jwt::convert_exp_to_timestamp(claims.exp), 0)
+            Local.timestamp_opt(JwtSecret::convert_exp_to_timestamp(claims.exp), 0)
         {
             expire_datetime
         } else {

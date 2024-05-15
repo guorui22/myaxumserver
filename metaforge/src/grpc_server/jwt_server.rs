@@ -4,7 +4,7 @@ use libproto::{JwtReply, JwtRequest};
 use crate::model::global_const::JWT;
 
 pub struct Jwt {
-    pub jwt: crate::auth::Jwt,
+    pub jwt: crate::auth::JwtSecret,
     pub jwt_exp: i64,
 }
 
