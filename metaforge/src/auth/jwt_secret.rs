@@ -35,12 +35,12 @@ pub fn get_auth_user(code: &str, pwd: &str) -> Option<&'static serde_json::Value
 /// secret   密钥
 /// iss      签发者
 #[derive(Debug, Clone)]
-pub struct Jwt {
+pub struct JwtSecret {
     pub secret: String,
     pub iss: String,
 }
 
-impl Jwt {
+impl JwtSecret {
     /// 构造函数
     pub fn new(secret: String, iss: String) -> Self {
         Self { secret, iss }
@@ -54,7 +54,7 @@ impl Jwt {
             code: usercode,
             name,
             iss: self.iss.clone(),
-            exp: Jwt::convert_exp_to_timestamp(life),
+            exp: JwtSecret::convert_exp_to_timestamp(life),
         }
     }
     /// 从一个已存在的 Claims 生成新的 Claims 结构体的实例
