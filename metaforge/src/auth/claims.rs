@@ -85,7 +85,7 @@ impl<S> FromRequestParts<S> for Claims
 
         // Check the token expiration
         let exp = if let LocalResult::Single(expire_datetime) =
-            Local.timestamp_opt(Jwt::calc_claims_exp(claims.exp), 0)
+            Local.timestamp_opt(Jwt::convert_exp_to_timestamp(claims.exp), 0)
         {
             expire_datetime
         } else {

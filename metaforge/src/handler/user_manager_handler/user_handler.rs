@@ -38,8 +38,8 @@ pub async fn login_action(
             .get("name")
             .map_or("", |val| val.as_str().unwrap_or_default());
         // 构造 token 重要包含的信息(token 过期时间很重要)
-        let claims = JWT.new_claims(frm.usercode.clone(), client_name.to_string(), TOKEN_EXP);
-        if let Ok(token) = JWT.token(&claims) {
+        let claims = JWT.create_claims(frm.usercode.clone(), client_name.to_string(), TOKEN_EXP);
+        if let Ok(token) = JWT.to_token(&claims) {
             // 将 session ID 保存到 Cookie
             save_session_id_to_cookie(&token, &mut headers);
 

@@ -33,9 +33,9 @@ pub async fn get_jwt_token(
         .map_or("", |val| val.as_str().unwrap_or_default());
 
     // 构造 token 重要包含的信息(token 过期时间很重要)
-    let claims = JWT.new_claims(client_code, client_name.to_string(), TOKEN_EXP);
+    let claims = JWT.create_claims(client_code, client_name.to_string(), TOKEN_EXP);
     let token = JWT
-        .token(&claims)
+        .to_token(&claims)
         .map_err(|err| AuthError::TokenCreation(err.to_string()))?;
 
     Ok(Json(json!({

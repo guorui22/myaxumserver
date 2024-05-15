@@ -49,21 +49,21 @@ impl Jwt {
     /// usercode   用户唯一编号
     /// name     用户名
     /// life     过期时间长度，单位秒
-    pub fn new_claims(&self, usercode: String, name: String, life: i64) -> Claims {
+    pub fn create_claims(&self, usercode: String, name: String, life: i64) -> Claims {
         Claims {
             code: usercode,
             name,
             iss: self.iss.clone(),
-            exp: Jwt::calc_claims_exp(life),
+            exp: Jwt::convert_exp_to_timestamp(life),
         }
     }
     /// 从一个已存在的 Claims 生成新的 Claims 结构体的实例
-    pub fn new_claims_with(&self, claims: Claims, your_exp: i64) -> Claims {
-        self.new_claims(claims.code.clone(), claims.name.clone(), your_exp)
+    pub fn create_claims_with_expire(&self, claims: Claims, your_exp: i64) -> Claims {
+        self.create_claims(claims.code.clone(), claims.name.clone(), your_exp)
     }
 
-    /// 计算 Token 过期时间
-    pub(crate) fn calc_claims_exp(exp: i64) -> i64 {
+    /// 计算 Token 过期时间长度为时间戳
+    pub(crate) fn convert_exp_to_timestamp(exp: i64) -> i64 {
         (Local::now() + Duration::try_seconds(exp).unwrap_or(TimeDelta::zero())).timestamp()
     }
     /// 获取密钥的字节数组
@@ -71,7 +71,7 @@ impl Jwt {
         (self.secret).as_bytes()
     }
     /// 为 Claims 实例生成 Token
-    pub fn token(&self, claims: &Claims) -> Result<String, AuthError> {
+    pub fn to_token(&self, claims: &Claims) -> Result<String, AuthError> {
         encode(
             &Header::default(),
             claims,
