@@ -5,12 +5,14 @@ pub use calculator_server::*;
 pub use category_server::*;
 pub use login_server::*;
 pub use topic_server::*;
+pub use jwt_server::*;
 
 mod admin_server;
 mod calculator_server;
 mod category_server;
 mod login_server;
 mod topic_server;
+mod jwt_server;
 
 /// 宏定义：初始化 grpc 客户端
 #[macro_export]

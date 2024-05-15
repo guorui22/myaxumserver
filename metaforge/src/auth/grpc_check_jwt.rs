@@ -6,6 +6,7 @@ pub fn grpc_check_auth(req: Request<()>) -> Result<Request<()>, Status> {
     match req.metadata().get("authorization") {
         Some(t) if {
             let jwt = t.to_str().map_err(|_|Status::unauthenticated("不是有效的 JWT Token。"))?.split_whitespace().collect::<Vec<&str>>()[1];
+            dbg!(format!("request jwt: {}", jwt));
             let claims = JWT.verify_and_get(jwt).map_err(|_|Status::unauthenticated("JWT Token 验证失败。"))?;
             if claims.is_expired() {
                 return Err(Status::unauthenticated("JWT Token 已过期。"));

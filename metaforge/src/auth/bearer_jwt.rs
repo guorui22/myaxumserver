@@ -58,8 +58,8 @@ impl Jwt {
         }
     }
     /// 从一个已存在的 Claims 生成新的 Claims 结构体的实例
-    pub fn new_claims_with(&self, claims: Claims) -> Claims {
-        self.new_claims(claims.code.clone(), claims.name.clone(), claims.exp)
+    pub fn new_claims_with(&self, claims: Claims, your_exp: i64) -> Claims {
+        self.new_claims(claims.code.clone(), claims.name.clone(), your_exp)
     }
 
     /// 计算 Token 过期时间

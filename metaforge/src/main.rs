@@ -22,6 +22,7 @@ use libdatabase::{
 };
 use libglobal_request_id::MyMakeRequestId;
 use libproto::calculator_service_server::CalculatorServiceServer;
+use libproto::jwt_service_server::JwtServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[allow(unused_imports)]
 use libtracing::{debug, get_my_format, info, Level, trace, tracing_subscriber};
@@ -32,7 +33,7 @@ use libtracing::get_my_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use metaforge::auth::grpc_check_auth;
-use metaforge::grpc_server::{Calculator, Login};
+use metaforge::grpc_server::{Calculator, Jwt, Login};
 use metaforge::handler::{
     get_jwt_token, get_protected_content, index, login_action, logout_action, mysql_query,
     mysql_transaction, redirect01, redirect02, upload_file, upload_file_action, UploadPath,
@@ -201,10 +202,18 @@ async fn main() -> Result<(), anyhow::Error> {
             jwt_exp: JWT_EXP.clone(),
             db_pool: test_mysql_db_01_pool.clone(),
         };
+        let jwt_srv = Jwt {
+            jwt: JWT.clone(),
+            jwt_exp: JWT_EXP.clone(),
+        };
 
         tonic::transport::Server::builder()
             .add_service(CalculatorServiceServer::with_interceptor(
                 calculater_srv,
+                grpc_check_auth,
+            ))
+            .add_service(JwtServiceServer::with_interceptor(
+                jwt_srv,
                 grpc_check_auth,
             ))
             .add_service(LoginServiceServer::new(

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package jwt;
+
+// Java 代码生成配置
+option java_multiple_files = true;
+option java_package = "com.sunnercn.zycrm.grpc.jwt";
+option java_outer_classname = "JwtProto";
+
+// -- JWT 对象
+message Jwt {}
+
+// -- 添加 JWT 服务（请求消息、响应消息）
+message JwtRequest {
+  string old_jwt = 1;
+}
+message JwtReply {
+  string new_jwt = 1;
+}
+
+// -- 在“JWT”上定义rpc服务接口
+service JwtService {
+  // 获取最新的JWT Token
+  rpc get_jwt_token(JwtRequest) returns (JwtReply);
+}
