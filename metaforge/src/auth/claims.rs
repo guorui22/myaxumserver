@@ -73,7 +73,7 @@ impl<S> FromRequestParts<S> for Claims
                 .unwrap_or_default()
         } else {
             return Err((
-                StatusCode::BAD_REQUEST,
+                StatusCode::UNAUTHORIZED,
                 "Missing Authorization Header".to_string(),
             ));
         };
@@ -81,7 +81,7 @@ impl<S> FromRequestParts<S> for Claims
         // Decode the user data
         let claims = JWT
             .verify_and_get(&token)
-            .map_err(|err| (StatusCode::BAD_REQUEST, err.to_string()))?;
+            .map_err(|err| (StatusCode::UNAUTHORIZED, err.to_string()))?;
 
         // Check the token expiration
         let exp = if let LocalResult::Single(expire_datetime) =
@@ -89,10 +89,10 @@ impl<S> FromRequestParts<S> for Claims
         {
             expire_datetime
         } else {
-            return Err((StatusCode::BAD_REQUEST, "Invalid Claims Expire".to_string()));
+            return Err((StatusCode::UNAUTHORIZED, "Invalid Claims Expire".to_string()));
         };
         if exp < Local::now() {
-            return Err((StatusCode::BAD_REQUEST, "Token Expired".to_string()));
+            return Err((StatusCode::UNAUTHORIZED, "Token Expired".to_string()));
         }
 
         Ok(claims)

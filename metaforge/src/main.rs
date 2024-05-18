@@ -178,6 +178,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 .layer(
                     CorsLayer::new()
                         .allow_methods([Method::GET, Method::POST])
+                        .allow_headers([HeaderName::from_static("authorization")])
                         .allow_origin(Any),
                 ),
         );

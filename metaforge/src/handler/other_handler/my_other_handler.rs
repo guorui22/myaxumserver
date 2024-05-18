@@ -1,10 +1,11 @@
 use axum::http::{HeaderMap, StatusCode};
 use axum_macros::debug_handler;
+use crate::auth::Claims;
 
 /// 测试函数
 #[debug_handler]
-pub async fn index() -> String {
-    format!("Welcome to you! at {}", chrono::Local::now())
+pub async fn index(claims: Claims) -> String {
+    format!("Welcome to you! at {} for {}", chrono::Local::now(), claims.name)
 }
 
 /// 本站页面跳转
