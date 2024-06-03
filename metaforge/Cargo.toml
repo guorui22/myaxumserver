@@ -59,6 +59,10 @@ thiserror = "1.0.59"
 prost-types = "0.12.4"
 # 随机生成器
 rand = "0.8.5"
+# AES CTR 模式对称加密
+aes = "0.8"
+ctr = "0.9"
+hex-literal = "0.4.1"
 
 [dev-dependencies]
 #reqwest = { version = "0.12.0" }

@@ -1,4 +1,4 @@
-    [main]
+[main]
 mn_log_path = "/home/gr/桌面"
 mn_upload_path = "/home/gr/桌面"
 mn_log_name = "my_log"

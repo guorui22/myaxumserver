@@ -17,12 +17,17 @@ impl<T: Clone + Send + Sync + 'static> LoginService for Login<T> {
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginReply>, Status> {
         let input = request.into_inner();
+        let usercode = input.usercode;
+        let password = input.password;
+
+        dbg!(format!("usercode: {}, password: {}", usercode, password));
+
         let jwt = &self.jwt;
-        let claims = jwt.create_claims(input.usercode.clone(), "郭睿".to_string(), self.jwt_exp);
+        let claims = jwt.create_claims(usercode.clone(), "郭睿".to_string(), self.jwt_exp);
         let token = jwt.to_token(&claims).map_err(|err| Status::internal(err.to_string()))?;
 
         let output_data = LoginReplyData {
-            usercode: Some(input.usercode),
+            usercode: Some(usercode),
             username: Some("郭睿".to_string()),
             jwt: Some(token),
         };
