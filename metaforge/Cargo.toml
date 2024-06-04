@@ -62,7 +62,7 @@ rand = "0.8.5"
 # AES CTR 模式对称加密
 aes = "0.8"
 ctr = "0.9"
-hex-literal = "0.4.1"
+const-hex = "1.12"
 
 [dev-dependencies]
 #reqwest = { version = "0.12.0" }
