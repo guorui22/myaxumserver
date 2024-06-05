@@ -189,7 +189,7 @@ pub async fn mysql_query<T>(conn: GrMySQLPool<T>, sql_vec: Vec<String>) -> Resul
             })
             .collect::<Vec<HashMap<String, JsonValue>>>();
 
-        rst_vec.push(if vec_db_rows_maps.len()>0usize {Some(vec_db_rows_maps)} else {None});
+        rst_vec.push(vec_db_rows_maps);
     }
 
     Ok(json!({
