@@ -20,7 +20,6 @@ use libdatabase::{
     GrMySQLPool, init_mysql_conn_pool, init_redis_conn_pool, Pool, Redis01, RedisPool,
     TestMySqlDb01,
 };
-use libglobal_request_id::MyMakeRequestId;
 use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::jwt_service_server::JwtServiceServer;
 use libproto::login_service_server::LoginServiceServer;
@@ -40,6 +39,7 @@ use metaforge::handler::{
     user_login, user_main,
 };
 use metaforge::model::global_const::{APP_INI, JWT, JWT_EXP};
+use metaforge::model::my_request_id::MyMakeRequestId;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {

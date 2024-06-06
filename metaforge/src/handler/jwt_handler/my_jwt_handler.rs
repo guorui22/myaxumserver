@@ -3,12 +3,12 @@ use axum::Json;
 use axum_macros::debug_handler;
 use serde_json::json;
 
-use libglobal_request_id::get_request_id;
 use libtracing::info;
 use crate::auth::{AuthError, Claims, get_auth_user, TOKEN_EXP};
 
 use crate::handler::AuthInfo;
 use crate::model::global_const::JWT;
+use crate::model::my_request_id::get_request_id;
 
 /// 使用用户名&密码获取 JWT Token
 #[debug_handler]

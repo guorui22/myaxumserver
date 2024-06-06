@@ -1,5 +1,5 @@
 use axum::extract::Request;
-use axum_extra::headers::HeaderValue;
+use axum::http::{HeaderMap, HeaderValue};
 use tower_http::request_id::{MakeRequestId, RequestId};
 use uuid::Uuid;
 
@@ -13,4 +13,12 @@ impl MakeRequestId for MyMakeRequestId {
         let request_id = Uuid::new_v4().to_string();
         HeaderValue::from_str(request_id.as_ref()).map_or(None, |x| Some(RequestId::new(x)))
     }
+}
+
+/// 获取请求头中的 x-request-id
+pub fn get_request_id(headers: &HeaderMap) -> String {
+    headers.get("x-request-id").map_or_else(
+        || "".to_string(),
+        |x| x.to_str().map_or_else(|_| "".to_string(), |x| x.to_string()),
+    )
 }

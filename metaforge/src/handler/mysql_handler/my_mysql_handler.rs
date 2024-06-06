@@ -3,8 +3,8 @@ use axum::{Extension, Json};
 use axum_macros::debug_handler;
 
 use libdatabase::{DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
-use libglobal_request_id::get_request_id;
 use libtracing::info;
+use crate::model::my_request_id::get_request_id;
 
 /// mysql 批量查询
 #[debug_handler]
