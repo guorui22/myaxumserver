@@ -1,1 +1,0 @@
-var output_05=function(e){"use strict";return e.jsReadFile=async function(e){let o="";try{console.log("Read from a file",e),o=await runjs.readFile(e),console.log("Read from a file. "+o)}catch(o){console.error("Unable to read file",e,o)}return o},e}({});

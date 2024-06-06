@@ -25,14 +25,10 @@ ctrlc = { version = "3.4" } # ctrl+c 退出应用
 askama = { version = "0.12", features = [] }
 # 日期时间处理
 chrono = { version = "0.4" }   # for date and time
-# 用户认证相关
-#libauth = { path = "../libauth" } # 用户认证相关
 # 错误处理相关
 liberror = { path = "../liberror" } # 自定义错误类型
 # 日志处理（Tracing框架）
 libtracing = { path = "../libtracing" } # 日志处理
-# 全局唯一请求ID（用于日志追踪）
-#libglobal_request_id = { path = "../libglobal_request_id" } # 日志处理
 # 读写配置文件
 libconfig = { path = "../libconfig" } # 读取配置文件内容
 # 数据库连接池（MySQL、Redis）
@@ -43,25 +39,29 @@ bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
 libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
-# 执行 JavaScript & TypeScript 代码
+# 使用 tera 模板库制作 JavaScript & TypeScript 代码脚本模版
 tera = { version = "1" }
-anyhow = { version = "1.0.82" }
+# 基于trait对象的错误类型，用于统一错误处理
+anyhow = { version = "1.0" }
 # 获取 CPU 内核数量
-num_cpus = { version = "1.16.0" }
-lazy_static = "1.4.0"
+num_cpus = { version = "1.16" }
+# 用于声明延迟计算的静态数据，通常用在需要全局状态管理或初始化成本较高的资源时
+lazy_static = "1.4"
 # 密码加密解密
 bcrypt = { version = "0.15" }
 # jwt token
-jsonwebtoken = { version = "9.0" }
+jsonwebtoken = { version = "9.3" }
 # 自定义错误类型
-thiserror = "1.0.59"
+thiserror = "1.0"
 # proto 文件生成 Rust 接口依赖
-prost-types = "0.12.4"
+prost-types = "0.12"
 # 随机生成器
-rand = "0.8.5"
-# AES CTR 模式对称加密
+rand = "0.8"
+# AES 加密算法库
 aes = "0.8"
+# AES CTR 模式对称加密实现
 ctr = "0.9"
+# 配合 AES 加密使用的字节数组与十六进制字符串的快速转换工具
 const-hex = "1.12"
 
 [dev-dependencies]
