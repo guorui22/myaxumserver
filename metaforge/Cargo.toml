@@ -26,7 +26,7 @@ askama = { version = "0.12", features = [] }
 # 日期时间处理
 chrono = { version = "0.4" }   # for date and time
 # 日志处理（Tracing框架）
-libtracing = { path = "../libtracing" } # 日志处理
+#libtracing = { path = "../libtracing" } # 日志处理
 # 读写配置文件
 libconfig = { path = "../libconfig" } # 读取配置文件内容
 # 数据库连接池（MySQL、Redis）
@@ -61,5 +61,9 @@ aes = "0.8"
 ctr = "0.9"
 # 配合 AES 加密使用的字节数组与十六进制字符串的快速转换工具
 const-hex = "1.12"
+# 日志管理依赖库
+tracing = "0.1"  # 日志框架
+tracing-appender = "0.2"  # 日志输出器
+tracing-subscriber = "0.3"
 
 [dev-dependencies]

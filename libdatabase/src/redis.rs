@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use anyhow::anyhow;
 
 use deadpool_redis::{Config, Connection, Pool, Runtime};
-use libtracing::error;
 
 /// 自定义数据库连接池类型 Redis01
 #[derive(Clone, Debug)]
@@ -57,7 +56,7 @@ pub async fn init_redis_conn_pool(
 pub async fn get_redis_connection(pool: Pool) -> Result<Connection, String> {
     let conn = pool.get().await.map_err(|err| {
         let str_err = format!("Redis 获取连接失败：{}", err);
-        error!("{str_err}");
+        // error!("{str_err}");
         str_err
     })?;
     Ok(conn)

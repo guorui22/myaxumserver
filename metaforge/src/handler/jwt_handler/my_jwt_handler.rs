@@ -2,8 +2,8 @@ use axum::http::HeaderMap;
 use axum::Json;
 use axum_macros::debug_handler;
 use serde_json::json;
+use tracing::info;
 
-use libtracing::info;
 use crate::auth::{AuthError, Claims, get_auth_user, TOKEN_EXP};
 
 use crate::handler::AuthInfo;

@@ -2,8 +2,8 @@ use libproto::login_service_server::LoginService;
 use libproto::{LoginReply, LoginReplyData, LoginRequest};
 use tonic::{Request, Response, Status};
 use libdatabase::{GrMySQLPool, TestMySqlDb01};
-use libtracing::info;
 use crate::auth::{aes_encrypt, JwtSecret};
+use tracing::info;
 
 #[derive(Clone, Debug)]
 pub struct Login {

@@ -15,6 +15,7 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::request_id::{PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+use tracing::{info, Level};
 
 use libdatabase::{
     GrMySQLPool, init_mysql_conn_pool, init_redis_conn_pool, Pool, Redis01, RedisPool,
@@ -24,13 +25,13 @@ use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::jwt_service_server::JwtServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[allow(unused_imports)]
-use libtracing::{debug, get_my_tracing_format, info, Level, trace, tracing_subscriber};
+use metaforge::my_tracing::{ get_my_tracing_format};
 #[cfg(not(debug_assertions))]
-use libtracing::get_my_tracing_file_writer;
+use metaforge::my_tracing::get_my_tracing_file_writer;
 #[cfg(debug_assertions)]
-use libtracing::get_my_tracing_stdout_writer;
+use metaforge::my_tracing::get_my_tracing_stdout_writer;
 #[cfg(not(debug_assertions))]
-use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use metaforge::auth::grpc_check_auth;
 use metaforge::grpc_server::{Calculator, Jwt, Login};
 use metaforge::handler::{
@@ -59,11 +60,11 @@ async fn main() -> Result<(), anyhow::Error> {
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_path = ini_main
         .get("mn_log_path")
-        .ok_or("MN_LOG_PATH not found".to_string())?;
+        .ok_or(anyhow!("MN_LOG_PATH not found"))?;
     #[cfg(not(debug_assertions))]
         let ini_main_mn_log_name = ini_main
         .get("mn_log_name")
-        .ok_or("MN_LOG_NAME not found".to_string())?;
+        .ok_or(anyhow!("MN_LOG_NAME not found"))?;
     #[cfg(not(debug_assertions))]
         let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
         get_my_tracing_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
