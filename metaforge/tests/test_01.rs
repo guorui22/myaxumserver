@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tonic::codegen::Body;
-
-use metaforge::util;
+use metaforge::js_deno;
 
 #[tokio::test]
 async fn deno_process_with_args() {
@@ -28,7 +26,7 @@ async fn deno_process_with_args() {
         }
     "#;
 
-    let result = util::deno::js_deno_cli(String::from(script), "process".to_string(), args).unwrap();
+    let result = js_deno::deno::js_deno_cli(String::from(script), "process".to_string(), args).unwrap();
     let arr:Vec<i32> = serde_json::from_str(&result).unwrap();
     dbg!(&arr);
 }

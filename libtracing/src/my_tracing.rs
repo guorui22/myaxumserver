@@ -22,7 +22,7 @@ impl FormatTime for LocalTimer {
 }
 
 /// 获取日志输出格式
-pub fn get_my_format() -> Format<Full, LocalTimer> {
+pub fn get_my_tracing_format() -> Format<Full, LocalTimer> {
     // 设置日志输出时的格式，例如，是否包含日志级别、是否包含日志来源位置(main.rs、lib.rs两文件中的日志输出只显示crate名称，其他*.rs文件的日志输出就会显示文件名称)、线程ID、线程名称、日志产生的源代码行号、日志的时间格式
     // 参考: https://docs.rs/tracing-subscriber/0.3.3/tracing_subscriber/fmt/struct.SubscriberBuilder.html#method.with_timer
     tracing_subscriber::fmt::format()
@@ -41,12 +41,12 @@ pub fn get_my_format() -> Format<Full, LocalTimer> {
 }
 
 #[cfg(debug_assertions)]
-pub fn get_my_stdout_writer() -> fn() -> Stdout {
+pub fn get_my_tracing_stdout_writer() -> fn() -> Stdout {
     std::io::stdout
 }
 
 #[cfg(not(debug_assertions))]
-pub fn get_my_file_writer(
+pub fn get_my_tracing_file_writer(
     directory: impl AsRef<Path>,
     file_name_prefix: impl AsRef<Path>,
 ) -> (NonBlocking, WorkerGuard) {

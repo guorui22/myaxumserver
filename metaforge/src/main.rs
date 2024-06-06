@@ -24,11 +24,11 @@ use libproto::calculator_service_server::CalculatorServiceServer;
 use libproto::jwt_service_server::JwtServiceServer;
 use libproto::login_service_server::LoginServiceServer;
 #[allow(unused_imports)]
-use libtracing::{debug, get_my_format, info, Level, trace, tracing_subscriber};
+use libtracing::{debug, get_my_tracing_format, info, Level, trace, tracing_subscriber};
 #[cfg(not(debug_assertions))]
-use libtracing::get_my_file_writer;
+use libtracing::get_my_tracing_file_writer;
 #[cfg(debug_assertions)]
-use libtracing::get_my_stdout_writer;
+use libtracing::get_my_tracing_stdout_writer;
 #[cfg(not(debug_assertions))]
 use libtracing::tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use metaforge::auth::grpc_check_auth;
@@ -66,11 +66,11 @@ async fn main() -> Result<(), anyhow::Error> {
         .ok_or("MN_LOG_NAME not found".to_string())?;
     #[cfg(not(debug_assertions))]
         let (my_writer, _worker_guard): (NonBlocking, WorkerGuard) =
-        get_my_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
+        get_my_tracing_file_writer(ini_main_mn_log_path, ini_main_mn_log_name);
 
     // debug模式下，日志输出到标准输出
     #[cfg(debug_assertions)]
-        let my_writer: fn() -> std::io::Stdout = get_my_stdout_writer();
+        let my_writer: fn() -> std::io::Stdout = get_my_tracing_stdout_writer();
 
     // 初始化日志等级、日志输出位置、日志格式(定制和筛选日志)
     let ini_log_level = ini_main.get("mn_log_level").map(|s| s.to_uppercase());
@@ -88,7 +88,7 @@ async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::fmt()
         .with_max_level(my_log_level)
         .with_writer(my_writer) // 写入标准输出，或者写入文件
-        .event_format(get_my_format())
+        .event_format(get_my_tracing_format())
         .init();
 
     // 获取配置文件中的 MYSQL_01 配置信息
