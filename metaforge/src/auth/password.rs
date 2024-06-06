@@ -9,9 +9,9 @@ pub fn verify(pwd: &str, hashed_pwd: &str) -> Result<bool, String> {
 }
 
 /// 密钥
-const KEY: [i32; 16] = [1, 3, 5, 8, 1, 9, 0, 7, 4, 0, 6, 12, 13, 14, 15, 16];
+const KEY: [u8; 16] = [1, 3, 5, 8, 1, 9, 0, 7, 4, 0, 6, 12, 13, 14, 15, 16];
 /// nonce 随机数
-const IV: [i32; 16] = [0x12; 16];
+const IV: [u8; 16] = [0x12; 16];
 
 /// AES 加密
 pub fn aes_encrypt(input: String) -> String {
