@@ -30,7 +30,7 @@ chrono = { version = "0.4" }   # for date and time
 # 读写配置文件
 libconfig = { path = "../libconfig" } # 读取配置文件内容
 # 数据库连接池（MySQL、Redis）
-libdatabase = { path = "../libdatabase" } # 数据库访问
+#libdatabase = { path = "../libdatabase" } # 数据库访问
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)
 bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
 # proto 文件生成 Rust 接口依赖
@@ -64,6 +64,14 @@ const-hex = "1.12"
 # 日志管理依赖库
 tracing = "0.1"  # 日志框架
 tracing-appender = "0.2"  # 日志输出器
-tracing-subscriber = "0.3"
+tracing-subscriber = "0.3" # 日志订阅器
+# Sea ORM库依赖，必须启用 sqlx-mysql + runtime-tokio-native-tls 特性才能连接 MySQL 数据库
+sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls"] }
+# 异步 SQL 工具包
+sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "mysql", "bigdecimal" ] }
+# Redis 数据库连接池
+deadpool-redis = { version = "0.14", features = ["serde"] }
+# SQL 解析
+sqlparser = "0.46"
 
 [dev-dependencies]

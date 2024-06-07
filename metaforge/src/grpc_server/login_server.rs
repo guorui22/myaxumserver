@@ -1,9 +1,9 @@
 use libproto::login_service_server::LoginService;
 use libproto::{LoginReply, LoginReplyData, LoginRequest};
 use tonic::{Request, Response, Status};
-use libdatabase::{GrMySQLPool, TestMySqlDb01};
 use crate::auth::{aes_encrypt, JwtSecret};
 use tracing::info;
+use crate::database::{GrMySQLPool, mysql_query, TestMySqlDb01};
 
 #[derive(Clone, Debug)]
 pub struct Login {
@@ -25,7 +25,7 @@ impl LoginService for Login {
         let password = input.password;
 
         // 查询数据库，验证用户名和密码
-        let query_result = libdatabase::mysql_query(self.db_pool.clone(), vec![format!("select * from sys_user where user_code = '{}' and user_password = '{}'", usercode, aes_encrypt(password))])
+        let query_result = mysql_query(self.db_pool.clone(), vec![format!("select * from sys_user where user_code = '{}' and user_password = '{}'", usercode, aes_encrypt(password))])
             .await
             .map_or_else(|err| Err(Status::internal(err.to_string())), |result| Ok(result))?;
 

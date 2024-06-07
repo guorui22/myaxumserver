@@ -3,7 +3,7 @@ use axum::{Extension, Json};
 use axum_macros::debug_handler;
 use tracing::info;
 
-use libdatabase::{DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
+use crate::database::{DbBatchQueryArgs, GrMySQLPool, TestMySqlDb01};
 use crate::model::my_request_id::get_request_id;
 
 /// mysql 批量查询
@@ -22,7 +22,7 @@ pub async fn mysql_query(
         evn_name => Err(format!("未知的运行环境名称: {}", evn_name))?,
     };
 
-    libdatabase::mysql_query(conn, sql_vec)
+    crate::database::mysql_query(conn, sql_vec)
         .await
         .map_err(|err| format!("数据库查询失败: {}", err))
         .map(Json)
@@ -44,7 +44,7 @@ pub async fn mysql_transaction(
         evn_name => Err(format!("未知的运行环境名称: {}", evn_name))?,
     };
 
-    libdatabase::mysql_transaction(conn, sql_vec, true)
+    crate::database::mysql_transaction(conn, sql_vec, true)
         .await
         .map_err(|err| format!("数据库事务失败: {}", err))
         .map(Json)

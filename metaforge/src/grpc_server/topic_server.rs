@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Datelike, Local, TimeZone, Timelike};
-use libdatabase::sqlx;
 use sqlx::{MySqlPool, Row};
 
 use libproto::topic_service_server::TopicService;

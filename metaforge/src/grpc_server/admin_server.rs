@@ -1,6 +1,4 @@
 use std::sync::Arc;
-use libdatabase::sqlx;
-
 use sqlx::{MySqlPool, Row};
 
 use libproto::{
