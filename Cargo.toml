@@ -7,10 +7,6 @@ members = [
     "metaforge"
 ]
 
-[profile.release.package.libwasm]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"
-
 [profile.release]
 lto = true
 strip = true

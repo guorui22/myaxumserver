@@ -14,10 +14,10 @@ sqlx = { version = "0.7", features = [ "runtime-tokio-native-tls" , "mysql", "bi
 serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 # Redis 数据库连接池
 deadpool-redis = { version = "0.14", features = ["serde"] }
-anyhow = "1.0.82"
-serde_json = "1.0.116" # 日志处理
+anyhow = "1"
+serde_json = "1" # 日志处理
 # SQL 解析
-sqlparser = "0.46.0"
+sqlparser = "0.46"
 # 日期时间处理
 chrono = { version = "0.4" }   # for date and time
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)

@@ -13,11 +13,15 @@ use sqlx::{Column, MySql, MySqlPool, Pool, Row};
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::TypeInfo;
 
-/// 自定义数据库连接池类型 TestMySqlDb01
+/// 自定义【测试】数据库连接池类型 TestMySqlDb01
 #[derive(Clone, Debug)]
 pub struct TestMySqlDb01;
 
-/// 自定义数据库连接池
+/// 自定义【生产】数据库连接池类型 ProdMySqlDb01
+#[derive(Clone, Debug)]
+pub struct ProdMySqlDb01;
+
+/// 自定义【MySQL】数据库连接池
 #[derive(Clone, Debug)]
 pub struct GrMySQLPool<T> {
     pub db_conn: MySqlPool,

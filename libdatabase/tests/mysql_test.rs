@@ -1,13 +1,3 @@
-use std::ops::Deref;
-use std::process::id;
-use anyhow::anyhow;
-use sea_orm::sea_query::Nullable;
-use serde::de::IntoDeserializer;
-use serde_json::{json, to_string};
-use sqlparser::ast::{Expr, Ident, ObjectName, SetExpr, Statement, TableFactor, Value};
-use sqlparser::dialect::MySqlDialect;
-use sqlparser::parser::Parser;
-use sqlparser::test_utils::table;
 use libdatabase::mysql_sql_ttl;
 
 /// 全生命周期 SQL 语句生成测试
