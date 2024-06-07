@@ -4,7 +4,6 @@ members = [
     "libconfig",
     "libdatabase",
     "libproto",
-    "libwasm",
     "metaforge"
 ]
 
