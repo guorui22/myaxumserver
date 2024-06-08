@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 
-use libconfig::init_server_config;
-
 use crate::auth::JwtSecret;
+use crate::config::init_server_config;
 
 lazy_static! {
 

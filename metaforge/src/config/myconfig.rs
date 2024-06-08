@@ -1,6 +1,6 @@
-use config::Config;
 use std::collections::HashMap;
 use anyhow::anyhow;
+use config::Config;
 
 /// 读取服务器配置文件参数信息
 pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, anyhow::Error> {

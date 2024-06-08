@@ -7,3 +7,4 @@ pub mod auth;
 pub mod grpc_server;
 pub mod my_tracing;
 pub mod database;
+pub mod config;
