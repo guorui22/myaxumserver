@@ -29,6 +29,7 @@
       <sourceFolder url="file://$MODULE_DIR$/libjsandbox/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libjsandbox/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/libdatabase/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/letter-avatar/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/myfront/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
