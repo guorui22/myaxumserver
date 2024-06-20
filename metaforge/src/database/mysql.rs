@@ -281,3 +281,51 @@ pub async fn mysql_sql_ttl(sql: String) -> Result<String, anyhow::Error> {
         Err(anyhow!("SQL解析失败"))
     };
 }
+
+
+mod tests {
+    use anyhow::anyhow;
+    use crate::database::{GrMySQLPool, init_mysql_conn_pool, mysql_transaction, TestMySqlDb01};
+    use crate::model::global_const::APP_INI;
+
+    // 测试：插入用户
+    #[tokio::test]
+    async fn insert_user() -> Result<(), anyhow::Error> {
+
+        // 获取配置文件中的 MYSQL_01 配置信息
+        let ini_mysql_01 = APP_INI
+            .get("mysql_01")
+            .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
+        // 初始化 MYSQL_01 数据库连接池
+        let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
+            init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
+
+        let rst = mysql_transaction(test_mysql_db_01_pool, vec![
+            "insert into sys_user (id, user_code, user_name, user_password, status, submit_time, submit_user) values ('10002', '07800', 'test', 'fa0e75dcb9af', 0, now(), '07788')".to_string(), ], true).await?;
+
+        dbg!(&rst);
+
+        Ok(())
+    }
+
+    // 测试：修改用户
+    #[tokio::test]
+    async fn update_user() -> Result<(), anyhow::Error> {
+
+        // 获取配置文件中的 MYSQL_01 配置信息
+        let ini_mysql_01 = APP_INI
+            .get("mysql_01")
+            .ok_or(anyhow!("{} section not found", "MYSQL_01"))?;
+        // 初始化 MYSQL_01 数据库连接池
+        let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
+            init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
+
+        let rst = mysql_transaction(test_mysql_db_01_pool, vec![
+            "update sys_user set user_name='郭靖雯', submit_time=now() where user_code = '07800'".to_string(), ], true).await?;
+
+        dbg!(&rst);
+
+        Ok(())
+    }
+
+}
