@@ -62,7 +62,7 @@ pub mod generate {
         Ok(initials.to_uppercase())
     }
 
-    pub fn new(uid: String, name: Option<String>, image_size: f64, font_size: u32, font_name: String) -> Result<cairo::ImageSurface, Error> {
+    pub fn new(uid: String, name: Option<String>, image_size: f64, font_size: u32, font_name: String) -> Result<Vec<u8>, Error> {
         // 调色板为字符串提供较深和柔和的色彩配置
         let colors = [
             [
@@ -258,18 +258,21 @@ pub mod generate {
             }
         }
 
+        let mut buf = Vec::new();
+        image.write_to_png(&mut buf)?;
+
         // 返回绘制好的图片
-        Ok(image)
+        Ok(buf)
     }
 }
 
 mod tests {
-    use std::io::BufWriter;
+    use std::io::Write;
 
     #[test]
     fn create_surface() {
         let result = super::generate::new(
-            String::from("jsparber"),
+            String::from("parser"),
             Some(String::from("郭睿智")),
             100f64,
             25u32,
@@ -278,10 +281,8 @@ mod tests {
 
         // 文件写入
         let result = result.unwrap();
-        let file = std::fs::File::create("test.png").unwrap();
-        let mut buf = BufWriter::new(file);
-
-        result.write_to_png(&mut buf).unwrap();
+        let mut file = std::fs::File::create("test.png").unwrap();
+        file.write_all(&result).unwrap();
     }
 
 }
