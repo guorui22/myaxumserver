@@ -271,6 +271,7 @@ mod tests {
 
     #[test]
     fn create_surface() {
+        // 生成图片，并以字节数组的形式返回
         let result = super::generate::new(
             String::from("parser"),
             Some(String::from("郭睿智")),

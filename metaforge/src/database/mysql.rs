@@ -287,6 +287,7 @@ mod tests {
     use anyhow::anyhow;
     use crate::database::{GrMySQLPool, init_mysql_conn_pool, mysql_transaction, TestMySqlDb01};
     use crate::model::global_const::APP_INI;
+    use crate::utils::utils;
 
     // 测试：插入用户
     #[tokio::test]
@@ -300,8 +301,11 @@ mod tests {
         let test_mysql_db_01_pool: GrMySQLPool<TestMySqlDb01> =
             init_mysql_conn_pool::<TestMySqlDb01>(ini_mysql_01).await?;
 
+        let id = utils::generate_random_number(6);
+        let user_code = utils::generate_random_number(5);
+
         let rst = mysql_transaction(test_mysql_db_01_pool, vec![
-            "insert into sys_user (id, user_code, user_name, user_password, status, submit_time, submit_user) values ('10002', '07800', 'test', 'fa0e75dcb9af', 0, now(), '07788')".to_string(), ], true).await?;
+            format!("insert into sys_user (id, user_code, user_name, user_password, status, submit_time, submit_user) values ('{id}', '{user_code}', 'test', 'fa0e75dcb9af', 0, now(), '07788')"), ], true).await?;
 
         dbg!(&rst);
 
@@ -327,5 +331,4 @@ mod tests {
 
         Ok(())
     }
-
 }
