@@ -7,7 +7,7 @@ edition = "2021"
 # Rust 语言的 Protocol Buffers 实现。
 prost = "0.12"
 # 定义 Protocol Buffers 中类型在 Rust 里的对应类型。与 prost 库一起使用。
-prost-types = "0.12"
+prost-types = { workspace = true }
 # Rust 实现的一个高性能、开源、通用的 RPC 框架。这个用于生成 grpc 客户端与服务端代码。
 tonic = { version = "0.11"}
 

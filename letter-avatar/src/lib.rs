@@ -266,6 +266,7 @@ pub mod generate {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use std::io::Write;
 

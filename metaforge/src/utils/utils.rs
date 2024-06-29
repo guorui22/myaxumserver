@@ -1,6 +1,7 @@
 use rand::Rng;
 
-pub(crate) fn generate_random_number(length: usize) -> String {
+#[allow(dead_code)]
+fn generate_random_number(length: usize) -> String {
     let mut rng = rand::thread_rng();
     let mut number = String::new();
 

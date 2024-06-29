@@ -7,7 +7,7 @@ use chrono::Local;
 use sea_orm::JsonValue;
 use serde_json::json;
 use sqlparser::ast::{Ident, ObjectName, Statement, TableFactor};
-use sqlparser::dialect::{MySqlDialect};
+use sqlparser::dialect::MySqlDialect;
 use sqlparser::parser::Parser;
 use sqlx::{Column, MySql, MySqlPool, Pool, Row};
 use sqlx::mysql::MySqlPoolOptions;
@@ -282,16 +282,16 @@ pub async fn mysql_sql_ttl(sql: String) -> Result<String, anyhow::Error> {
     };
 }
 
-
 mod tests {
-    use anyhow::anyhow;
-    use crate::database::{GrMySQLPool, init_mysql_conn_pool, mysql_transaction, TestMySqlDb01};
-    use crate::model::global_const::APP_INI;
-    use crate::utils::utils;
 
     // 测试：插入用户
     #[tokio::test]
     async fn insert_user() -> Result<(), anyhow::Error> {
+
+        use anyhow::anyhow;
+        use crate::database::{GrMySQLPool, init_mysql_conn_pool, mysql_transaction, TestMySqlDb01};
+        use crate::model::global_const::APP_INI;
+        use crate::utils::utils;
 
         // 获取配置文件中的 MYSQL_01 配置信息
         let ini_mysql_01 = APP_INI
@@ -316,6 +316,9 @@ mod tests {
     #[tokio::test]
     async fn update_user() -> Result<(), anyhow::Error> {
 
+        use anyhow::anyhow;
+        use crate::database::{GrMySQLPool, init_mysql_conn_pool, mysql_transaction, TestMySqlDb01};
+        use crate::model::global_const::APP_INI;
         // 获取配置文件中的 MYSQL_01 配置信息
         let ini_mysql_01 = APP_INI
             .get("mysql_01")

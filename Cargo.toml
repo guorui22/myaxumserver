@@ -6,6 +6,9 @@ members = [
     "metaforge"
 ]
 
+[workspace.dependencies]
+prost-types = { version = "0.12"}
+
 [profile.release]
 lto = true
 strip = true

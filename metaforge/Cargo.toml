@@ -9,11 +9,11 @@ edition = "2021"
 # Axum Web框架依赖，multipart 处理文件上传
 axum = { version = "0.7", features = [ "multipart"] } # 基于 tokio 的 Web 框架，multipart 特性用于处理文件上传
 axum-macros = { version = "0.4", features = [] } # 可以使用#[debug_handler]标注获取更准确的错误提示
-axum-extra = { version = "0.9", features = ["typed-header"] } # Axum Web框架扩展
+axum-extra = { version = "0.9", features = ["typed-header"] } # Axum Web框架扩展。启用 TypedHeader 提取器和响应
 tokio = { version = "1", features = ["full"] } # Rust 异步运行时
 # Tower HTTP 中间件依赖
 tower = { version = "0.4", features = ["limit"] } # ConcurrencyLimitLayer 服务并发限制中间件支持
-tower-http = { version = "0.5.2", features = ["full"] } # HTTP 中间件支持
+tower-http = { version = "0.5", features = ["full"] } # HTTP 中间件支持
 # 序列化与反序列化依赖
 serde = { version = "1.0", features = ["derive"] } # 序列化与反序列化
 serde_json = "1.0"# JSON 序列化与反序列化
@@ -25,15 +25,13 @@ ctrlc = { version = "3.4" } # ctrl+c 退出应用
 askama = { version = "0.12", features = [] }
 # 日期时间处理
 chrono = { version = "0.4" }   # for date and time
-# 读写配置文件
-#libconfig = { path = "../libconfig" } # 读取配置文件内容
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)
 bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
 # proto 文件生成 Rust 接口依赖
 libproto = { path = "../libproto" }
 # grpc-server 服务器构建依赖
 tonic = { version = "0.11" }
-# 使用 tera 模板库制作 JavaScript & TypeScript 代码脚本模版
+# 使用 tera 模板库制作 deno 运行时可用 JavaScript & TypeScript 代码脚本模版
 tera = { version = "1" }
 # 基于trait对象的错误类型，用于统一错误处理
 anyhow = { version = "1.0" }
@@ -41,16 +39,16 @@ anyhow = { version = "1.0" }
 num_cpus = { version = "1.16" }
 # 用于声明延迟计算的静态数据，通常用在需要全局状态管理或初始化成本较高的资源时
 lazy_static = "1.4"
-# 密码加密解密
+# 密码加密解密，用于密码明文生成哈希和校验
 bcrypt = { version = "0.15" }
-# jwt token
+# JWT token 依赖库
 jsonwebtoken = { version = "9.3" }
 # 自定义错误类型
 thiserror = "1.0"
-# proto 文件生成 Rust 接口依赖
-prost-types = "0.12"
-# 随机生成器
-rand = "0.8"
+# 定义 Protocol Buffers 中类型在 Rust 里的对应类型。常与与 prost 库一起使用。
+prost-types = { workspace = true }
+# 随机数生成器
+rand = { version = "0.8" }
 # AES 加密算法库
 aes = "0.8"
 # AES CTR 模式对称加密实现
