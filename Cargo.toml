@@ -30,7 +30,7 @@ chrono = { version = "0.4" }   # for date and time
 bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
 # proto 文件生成 Rust 接口依赖
 libproto = { path = "./libproto" }
-# grpc-server 服务器构建依赖
+# grpc-server 服务器构建依赖 & grpc-client 客户端构建依赖
 tonic = { version = "0.11" }
 # 使用 tera 模板库制作 deno 运行时可用 JavaScript & TypeScript 代码脚本模版
 tera = { version = "1" }
@@ -46,6 +46,8 @@ bcrypt = { version = "0.15" }
 jsonwebtoken = { version = "9.3" }
 # 自定义错误类型
 thiserror = { version = "1.0" }
+# Rust 语言的 Protocol Buffers 实现。
+prost = { version = "0.12" }
 # 定义 Protocol Buffers 中类型在 Rust 里的对应类型。常与与 prost 库一起使用。
 prost-types = { version = "0.12" }
 # 随机数生成器
