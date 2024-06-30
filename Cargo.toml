@@ -28,8 +28,6 @@ askama = { version = "0.12", features = [] }
 chrono = { version = "0.4" }   # for date and time
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)
 bigdecimal = { version = "0.3", features = ["serde"] } # 处理货币金额
-# proto 文件生成 Rust 接口依赖
-libproto = { path = "./libproto" }
 # grpc-server 服务器构建依赖 & grpc-client 客户端构建依赖
 tonic = { version = "0.11" }
 # 使用 tera 模板库制作 deno 运行时可用 JavaScript & TypeScript 代码脚本模版
@@ -72,7 +70,8 @@ deadpool-redis = { version = "0.14", features = ["serde"] }
 sqlparser = { version = "0.46" }
 # 读取配置文件
 config = { version = "0.14" }
-
+# proto 文件生成 Rust 接口依赖
+libproto = { path = "./libproto" }
 
 [profile.release]
 lto = true
