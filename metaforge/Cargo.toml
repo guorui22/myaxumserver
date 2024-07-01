@@ -69,5 +69,3 @@ deadpool-redis = { workspace = true }
 sqlparser = { workspace = true }
 # 读取配置文件
 config = { workspace = true }
-
-[dev-dependencies]
