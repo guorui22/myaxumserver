@@ -51,7 +51,7 @@ async fn main() -> Result<(), anyhow::Error> {
         std::process::exit(0);
     }).unwrap();
 
-    // 读取服务器 main 参数
+    // 从配置文件读取服务器 main 参数
     let ini_main: &HashMap<String, String> = APP_INI
         .get("main")
         .ok_or(anyhow!("MAIN section not found"))?;
