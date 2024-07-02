@@ -27,8 +27,6 @@ askama = { workspace = true }
 chrono = { workspace = true }   # for date and time
 # 金额计算(sqlx-mysql v0.7.3 依赖于 bigdecimal v0.3.0)
 bigdecimal = { workspace = true } # 处理货币金额
-# proto 文件生成 Rust 接口依赖
-libproto = { workspace = true }
 # grpc-server 服务器构建依赖
 tonic = { workspace = true }
 # 使用 tera 模板库制作 deno 运行时可用 JavaScript & TypeScript 代码脚本模版
@@ -69,3 +67,5 @@ deadpool-redis = { workspace = true }
 sqlparser = { workspace = true }
 # 读取配置文件
 config = { workspace = true }
+# proto 文件生成 Rust 接口依赖的本地项目
+libproto = { workspace = true }

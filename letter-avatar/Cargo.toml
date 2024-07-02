@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 # Pango 是一个用于布局和渲染文本的库
-pango = "0.15.1"
+pango = { workspace = true }
 # 在 Cairo 创建的图形上下文中绘制 Pango 处理过的文本
-pangocairo = "0.15.1"
+pangocairo = { workspace = true }
 # 处理 Unicode 字符串的分割，包括单词分割、文本分段、行分割和句子分割。
-unicode-segmentation = "1.8.0"
+unicode-segmentation = { workspace = true }
 # Cairo 图形库的 Rust 绑定，Cairo 是一个用于创建矢量图形的 2D 图形库
-cairo-rs = { version = "0.15.1", features = ["png"] }
+cairo-rs = { workspace = true }
