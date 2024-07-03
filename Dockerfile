@@ -42,7 +42,7 @@ ENTRYPOINT ["/metaforge/metaforge"]
 # 4. 下载镜像：docker pull harbor.sunnercn.com/library/metaforge:v0.1.0
 # 5. 运行容器：docker run -tid --rm -p 5000:5000 -p 29029:29029 --name metaforge-server harbor.sunnercn.com/library/metaforge:v0.1.0
 # 6. 停止容器：docker stop metaforge-server
-# 7. 进入容器：docker exec -it metaforge-server /bin/bash
+# 7. 进入容器终端：docker exec -it metaforge-server /bin/bash
 # 8. 查看容器日志：docker exec -it metaforge-server tail -f /home/gr/桌面/my_log.2024-07-03
 # 9. 删除容器：docker rm metaforge-server
 # 10. 删除镜像：docker rmi harbor.sunnercn.com/library/metaforge:v0.1.0
@@ -51,7 +51,6 @@ ENTRYPOINT ["/metaforge/metaforge"]
 # 13. 查看容器IP：docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' metaforge-server
 # 14. 查看容器端口：docker port metaforge-server
 # 15. 查看容器内进程：docker top metaforge-server
-# 17. 查看容器内文件：docker exec -it metaforge-server /bin/bash
-# 18. 查看容器内环境变量：docker exec -it metaforge-server env
-# 19. 查看容器内网络：docker exec -it metaforge-server ifconfig
-# 20. 查看容器内进程：docker exec -it metaforge-server ps -ef
+# 16. 查看容器内环境变量：docker exec -it metaforge-server env
+# 17. 查看容器内网络：docker exec -it metaforge-server ifconfig
+# 18. 查看容器内进程：docker exec -it metaforge-server ps -ef
