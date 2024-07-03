@@ -1,6 +1,6 @@
 [main]
-mn_log_path = "/metaforge/log"
-mn_upload_path = "/metaforge/upload"
+mn_log_path = "/home/gr/桌面"
+mn_upload_path = "/home/gr/桌面"
 mn_log_name = "my_log"
 mn_log_level = "info"
 mn_grpc_host = "0.0.0.0"
@@ -14,12 +14,12 @@ jwt_iss = "圣农集团"
 jwt_exp = 36000
 
 [mysql_01]
-my_host = "172.17.0.1"
+my_host = "127.0.0.1"
 my_port = 4000
 my_user = "root"
 my_pwd = "6@Q29sX+38yz4Rep*^"
 my_db_name = "metaforge_db"
 
 [redis_01]
-rd_host = "172.17.0.1"
+rd_host = "127.0.0.1"
 rd_port = 6379

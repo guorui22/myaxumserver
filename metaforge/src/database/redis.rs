@@ -40,9 +40,10 @@ pub async fn init_redis_conn_pool(
     param_map: &HashMap<String, String>,
 ) -> Result<Pool, anyhow::Error> {
     let host_default = &String::from("127.0.0.1");
-    let host = param_map.get("RD_HOST").unwrap_or(host_default);
+    let host = param_map.get("rd_host").unwrap_or(host_default);
     let port_default = &String::from("6379");
-    let port = param_map.get("RD_PORT").unwrap_or(port_default);
+    let port = param_map.get("rd_port").unwrap_or(port_default);
+    dbg!(format!("redis://{host}:{port}"));
     let pool = Config::from_url(format!("redis://{host}:{port}"))
         .create_pool(Some(Runtime::Tokio1))
         .map_or_else(
