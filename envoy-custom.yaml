@@ -6,10 +6,10 @@ admin:
 static_resources:
   # 定义监听器
   listeners:
-    # 定义名为listener_0的监听器，监听0.0.0.0的8080端口
+    # 定义名为listener_0的监听器，监听0.0.0.0的10000端口
     - name: listener_0
       address:
-        socket_address: { address: 0.0.0.0, port_value: 8080 }
+        socket_address: { address: 0.0.0.0, port_value: 10000 }
       # 定义过滤器链
       filter_chains:
         # 定义一个过滤器链
@@ -97,5 +97,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 172.17.0.2
+                      address: 172.17.0.1
                       port_value: 29029
