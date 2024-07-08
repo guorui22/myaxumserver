@@ -1,0 +1,101 @@
+# 定义管理接口的监听地址和端口
+admin:
+  address:
+    socket_address: { address: 0.0.0.0, port_value: 9901 }
+# 静态资源定义，包括监听器、集群等
+static_resources:
+  # 定义监听器
+  listeners:
+    # 定义名为listener_0的监听器，监听0.0.0.0的8080端口
+    - name: listener_0
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 8080 }
+      # 定义过滤器链
+      filter_chains:
+        # 定义一个过滤器链
+        - filters:
+            # 定义HTTP连接管理器过滤器
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                # 编解码器类型设置为自动
+                codec_type: auto
+                # 统计前缀
+                stat_prefix: ingress_http
+                # 路由配置
+                route_config:
+                  name: local_route
+                  # 定义虚拟主机
+                  virtual_hosts:
+                    - name: local_service
+                      # 配置通配符域名，表示接受所有域名的请求
+                      domains: ["*"]
+                      # 定义路由规则
+                      routes:
+                        # 匹配所有前缀为"/"的请求，并将其路由到名为greeter_service的集群
+                        - match: { prefix: "/" }
+                          route:
+                            cluster: greeter_service
+                            # 设置gRPC的超时头部最大值
+                            max_stream_duration:
+                              grpc_timeout_header_max: 0s
+                      # 每过滤器类型的配置
+                      typed_per_filter_config:
+                        # CORS配置
+                        envoy.filters.http.cors:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.CorsPolicy
+                          # 允许所有来源的跨域请求
+                          allow_origin_string_match:
+                            - prefix: "*"
+                          # 允许的HTTP方法
+                          allow_methods: GET, PUT, DELETE, POST, OPTIONS
+                          # 允许的请求头部
+                          allow_headers: authorization,keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout
+                          # 预检请求的缓存时间
+                          max_age: "1728000"
+                          # 暴露给客户端的响应头部
+                          expose_headers: custom-header-1,grpc-status,grpc-message
+                # HTTP过滤器
+                http_filters:
+                  # gRPC Web过滤器，允许通过HTTP/1.1发送gRPC请求
+                  - name: envoy.filters.http.grpc_web
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
+                  # CORS过滤器
+                  - name: envoy.filters.http.cors
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
+                  # HTTP路由过滤器
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+  # 定义集群
+  clusters:
+    # 定义名为greeter_service的集群
+    - name: greeter_service
+      # 连接超时设置为0.25秒
+      connect_timeout: 0.25s
+      # 集群类型为逻辑DNS
+      type: logical_dns
+      # 负载均衡策略为轮询
+      lb_policy: round_robin
+      # 扩展协议选项
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options:
+              connection_keepalive:
+                interval: 30s
+                timeout: 5s
+      # 加载分配
+      load_assignment:
+        cluster_name: cluster_0
+        endpoints:
+          # 定义端点
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.17.0.2
+                      port_value: 29029
