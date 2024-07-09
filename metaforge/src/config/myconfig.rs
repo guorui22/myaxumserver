@@ -6,13 +6,9 @@ use config::Config;
 pub fn init_server_config() -> Result<HashMap<String, HashMap<String, String>>, anyhow::Error> {
     // 获取配置文件路径
     let root_path = std::env::current_dir().map_err(|err| anyhow!(err))?;
-
-    #[cfg(not(windows))]
     let path_to_conf = root_path.join("conf").join("conf.toml");
 
-    #[cfg(windows)]
-    let path_to_conf = root_path.join("conf_windows.toml");
-
+    // 读取配置文件
     Config::builder()
         .add_source(config::File::from(path_to_conf))
         .build()
