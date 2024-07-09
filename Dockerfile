@@ -54,3 +54,4 @@ ENTRYPOINT ["/metaforge/metaforge"]
 # 16. 查看容器内环境变量：docker exec -it metaforge-server env
 # 17. 查看容器内网络：docker exec -it metaforge-server ifconfig
 # 18. 查看容器内进程：docker exec -it metaforge-server ps -ef
+# 19. 查看镜像版本：docker run --rm redis:latest --version

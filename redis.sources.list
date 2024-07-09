@@ -1,0 +1,12 @@
+# 参考地址 https://www.cnblogs.com/exmyth/p/17517905.html
+# 注意这里使用 http 而不是 https
+# 运行 redis 容器（带国内软件源）： docker run --name redis --rm -tid -v $(pwd)/redis.sources.list:/etc/apt/sources.list -p 6379:6379 redis:latest /bin/bash -c "rm -f /etc/apt/sources.list.d/debian.sources && apt update -y && redis-server"
+# 运行 redis 容器（官方软件源）： docker run --name redis --rm -tid -p 6379:6379 redis:latest
+deb http://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib
+deb-src http://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib
+deb http://mirrors.aliyun.com/debian-security/ bookworm-security main
+deb-src http://mirrors.aliyun.com/debian-security/ bookworm-security main
+deb http://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib
+deb-src http://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib
+deb http://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib
+deb-src http://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib

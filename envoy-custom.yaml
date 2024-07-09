@@ -2,6 +2,7 @@
 admin:
   address:
     socket_address: { address: 0.0.0.0, port_value: 9901 }
+
 # 静态资源定义，包括监听器、集群等
 static_resources:
   # 定义监听器
@@ -18,8 +19,6 @@ static_resources:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-                # 编解码器类型设置为自动
-                codec_type: auto
                 # 统计前缀
                 stat_prefix: ingress_http
                 # 路由配置
@@ -69,6 +68,7 @@ static_resources:
                   - name: envoy.filters.http.router
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
   # 定义集群
   clusters:
     # 定义名为greeter_service的集群
@@ -99,3 +99,6 @@ static_resources:
                     socket_address:
                       address: 172.17.0.1
                       port_value: 29029
+
+# 运行 envoy 容器：
+# docker run --name envoy-proxy --rm -tid -v $(pwd)/envoy-custom.yaml:/etc/envoy/envoy-custom.yaml -p 9901:9901 -p 10000:10000 envoyproxy/envoy:v1.30-latest -c /etc/envoy/envoy-custom.yaml
