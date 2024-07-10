@@ -1,8 +1,11 @@
 -- 创建数据库 metaforge_db
-CREATE DATABASE `metaforge_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+CREATE DATABASE IF NOT EXISTS `metaforge_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+-- 指定数据库 metaforge_db，为后续的表创建操作做准备
+USE `metaforge_db`;
 
 -- 系统用户表
-CREATE TABLE `sys_user` (
+CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户ID',
   `user_code` varchar(64) NOT NULL COMMENT '用户编号',
   `user_name` varchar(128) DEFAULT NULL COMMENT '用户名称',
@@ -16,7 +19,7 @@ CREATE TABLE `sys_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='系统用户表';
 
 -- 系统用户表 TTL
-CREATE TABLE `sys_user_ttl` (
+CREATE TABLE IF NOT EXISTS `sys_user_ttl` (
   `id` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '用户ID',
   `user_code` varchar(64) NOT NULL COMMENT '用户编号',
   `user_name` varchar(128) DEFAULT NULL COMMENT '用户名称',

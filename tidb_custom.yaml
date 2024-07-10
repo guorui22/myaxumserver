@@ -1,2 +1,3 @@
 # 下载镜像 docker pull pingcap/tidb:v8.1.0
 # 运行容器 docker run --name tidb-server --rm -tid -p 4001:4000 pingcap/tidb:v8.1.0
+# 运行带有卷的容器 docker run --name tidb-server --rm -tid -v $(pwd)/tidb_custom.sh:/etc/tidb/tidb_custom.sh -v $(pwd)/metaforge/db_scripts/metaforge_db.sql:/etc/tidb/metaforge_db.sql -p 4001:4000 pingcap/tidb:v8.1.0 /bin/bash -c "chmod u+x /etc/tidb/tidb_custom.sh && /etc/tidb/tidb_custom.sh"
