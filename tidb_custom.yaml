@@ -1,0 +1,2 @@
+# 下载镜像 docker pull pingcap/tidb:v8.1.0
+# 运行容器 docker run --name tidb-server --rm -tid -p 4001:4000 pingcap/tidb:v8.1.0
