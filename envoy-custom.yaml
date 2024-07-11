@@ -1,3 +1,9 @@
+###################### envoy 代理服务器自定义配置文件 ######################
+
+# 运行 envoy 容器： docker run --name envoy-proxy --rm -tid -v $(pwd)/envoy-custom.yaml:/etc/envoy/envoy-custom.yaml -p 9901:9901 -p 10000:10000 envoyproxy/envoy:v1.30-latest -c /etc/envoy/envoy-custom.yaml
+
+#######################################################################
+
 # 定义管理接口的监听地址和端口
 admin:
   address:
@@ -99,6 +105,3 @@ static_resources:
                     socket_address:
                       address: 172.17.0.1
                       port_value: 29029
-
-# 运行 envoy 容器：
-# docker run --name envoy-proxy --rm -tid -v $(pwd)/envoy-custom.yaml:/etc/envoy/envoy-custom.yaml -p 9901:9901 -p 10000:10000 envoyproxy/envoy:v1.30-latest -c /etc/envoy/envoy-custom.yaml
