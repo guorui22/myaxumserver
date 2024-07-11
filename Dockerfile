@@ -40,7 +40,7 @@ ENTRYPOINT ["/metaforge/metaforge"]
 # 2. 登录私有镜像仓库(用户：admin 密码：Harbor_sn1983)：docker login -u admin harbor.sunnercn.com
 # 3. 发布镜像：docker push harbor.sunnercn.com/library/metaforge:v0.1.0
 # 4. 下载镜像：docker pull harbor.sunnercn.com/library/metaforge:v0.1.0
-# 5. 运行容器：docker run -tid --rm -p 5000:5000 -p 29029:29029 --name metaforge-server harbor.sunnercn.com/library/metaforge:v0.1.0
+# *5. 运行容器：docker run -tid --rm -p 5000:5000 -p 29029:29029 --name metaforge-server harbor.sunnercn.com/library/metaforge:v0.1.0
 # 6. 停止容器：docker stop metaforge-server
 # 7. 进入容器终端：docker exec -it metaforge-server /bin/bash
 # 8. 查看容器日志：docker exec -it metaforge-server tail -f /home/gr/桌面/my_log.2024-07-03
