@@ -1,5 +1,5 @@
 use rand::Rng;
-
+use tonic::{Request, Status};
 pub use admin_server::*;
 pub use calculator_server::*;
 pub use category_server::*;
@@ -17,15 +17,15 @@ mod jwt_server;
 /// 宏定义：初始化 grpc 客户端
 #[macro_export]
 macro_rules! get_grpc_client {
-    ($client: ty, $address: ident, $token: ident) => {
-        <$client>::with_interceptor(
-            Channel::from_static($address).connect().await.unwrap(),
+    ($ty1:ident<$ty2:ty>, $address:ident, $token:ident) => {
+        Ok(<$ty1<$ty2>>::with_interceptor(
+            <$ty2>::from_static($address).connect().await?,
             |mut req: Request<()>| {
-                let token: MetadataValue<_> = $token.parse().unwrap();
+                let token: MetadataValue<_> = $token.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
                 req.metadata_mut().insert("authorization", token);
                 Ok(req)
             },
-        )
+        ));
     };
 }
 

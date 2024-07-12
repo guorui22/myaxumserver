@@ -1,6 +1,6 @@
 ### 测试-计算器-平方再乘以2
 GRPC localhost:29029/calculator.CalculatorService/findSquare
-authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3ODgiLCJuYW1lIjoiXCLpg63nnb9cIiIsImlzcyI6IuWco-WGnOmbhuWboiIsImV4cCI6MTcyMDczMzk3NH0.-vJWKDFcaXckZPTNJiNUABy1bZU5_Sn3ucXFQocI1F0
 
 {
   "number": 8
@@ -19,8 +19,8 @@ authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwN
 <> 2024-02-01T101825.OK.json
 
 ### 测试-计算器-因数分解
-GRPC localhost:29029/calculator.CalculatorService/findFactors
-authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+GRPC localhost:10000/calculator.CalculatorService/findFactors
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3ODgiLCJuYW1lIjoiXCLpg63nnb9cIiIsImlzcyI6IuWco-WGnOmbhuWboiIsImV4cCI6MTcyMDczMzk3NH0.-vJWKDFcaXckZPTNJiNUABy1bZU5_Sn3ucXFQocI1F0
 
 {
   "number": 16
@@ -28,11 +28,11 @@ authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwN
 
 ### 测试-用户登录接口
 GRPC localhost:29029/login.LoginService/DoLogin
-authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ
+authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb2RlIjoiMDc3ODgiLCJuYW1lIjoiXCLpg63nnb9cIiIsImlzcyI6IuWco-WGnOmbhuWboiIsImV4cCI6MTcyMDczMzk3NH0.-vJWKDFcaXckZPTNJiNUABy1bZU5_Sn3ucXFQocI1F0
 
 {
-  "usercode": "111",
-  "password": "222"
+  "usercode": "07788",
+  "password": "123456"
 }
 
 <> 2024-03-11T113645.OK.json

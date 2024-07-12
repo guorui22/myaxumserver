@@ -1,4 +1,3 @@
-use libgrpc::{generate_random_string, get_grpc_client};
 use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
 use tonic::Request;
@@ -8,6 +7,8 @@ use libproto::{
     get_admin_request::{ByAuth, ById, Condition},
     EditAdminRequest, GetAdminRequest, ListAdminRequest, ToggleAdminRequest,
 };
+use metaforge::get_grpc_client;
+use metaforge::grpc_server::generate_random_string;
 
 /// 服务器地址
 const TEST_ADDRESS: &'static str = "http://127.0.0.1:29029";

@@ -1,7 +1,5 @@
-use libjsandbox::script::AnyError;
-
 #[tokio::test]
-async fn call_06() -> Result<(), AnyError> {
+async fn call_06() -> Result<(), anyhow::Error> {
     let num_cpu = num_cpus::get();
     dbg!(num_cpu);
     assert_eq!(num_cpu, 16);

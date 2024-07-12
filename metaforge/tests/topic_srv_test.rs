@@ -1,4 +1,3 @@
-use libgrpc::get_grpc_client;
 use libproto::{
     topic_service_client::TopicServiceClient, CreateTopicRequest, DatelineRange, EditTopicRequest,
     GetTopicRequest, ListTopicRequest, ToggleTopicRequest,
@@ -6,6 +5,7 @@ use libproto::{
 use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
 use tonic::Request;
+use metaforge::get_grpc_client;
 
 /// 服务器地址
 const TEST_ADDRESS: &'static str = "http://127.0.0.1:29029";
