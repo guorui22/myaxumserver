@@ -20,7 +20,7 @@ macro_rules! get_grpc_client {
     ($ty1:ident<$ty2:ty>, $address:ident, $token:ident) => {
         Ok(<$ty1<$ty2>>::with_interceptor(
             <$ty2>::from_static($address).connect().await?,
-            |mut req: Request<()>| {
+            |mut req: Request<()>| -> Result<tonic::Request<()>, Status> {
                 let token: MetadataValue<_> = $token.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
                 req.metadata_mut().insert("authorization", token);
                 Ok(req)

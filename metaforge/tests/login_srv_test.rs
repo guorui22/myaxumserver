@@ -1,36 +1,29 @@
+use std::collections::HashMap;
 use anyhow::anyhow;
 use lazy_static::lazy_static;
 use libproto::login_service_client::LoginServiceClient;
-use libproto::LoginRequest;
+use libproto::{Input, LoginReplyData, LoginRequest};
 use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
 use tonic::{Request, Status};
 use tonic::codegen::InterceptedService;
 use tonic::service::Interceptor;
+use libproto::calculator_service_client::CalculatorServiceClient;
 use metaforge::get_grpc_client;
 use metaforge::model::global_const;
 
 lazy_static! {
-    pub static ref GRPC_ADDRESS: &'static str = "http://172.17.0.1:29029";
-    pub static ref GRPC_JWT: &'static str = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ";
+
+    static ref c01: HashMap<String, HashMap<String, String>> = metaforge::config::init_server_config().unwrap();
+    // gRPC 服务器地址
+    pub static ref GRPC_ADDRESS: &'static str = Box::leak(Box::new(format!("http://{}:{}", c01.get("main").unwrap().get("mn_grpc_host").unwrap(), c01.get("main").unwrap().get("mn_grpc_port").unwrap())));
 }
 
-/// 服务器地址
-static TEST_ADDRESS: &'static str = "http://172.17.0.1:29029";
-// const TEST_ADDRESS: &'static str = "http://grpc.sunnercn.com:29029";
-
-/// JWT 认证 Token
-const TEST_JWT: &'static str = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjbGllbnRfaWQiOiIwNzczMyIsImNsaWVudF9uYW1lIjoi6YOt552_IiwiZXhwIjo0ODUzMTg3MzU3fQ.febzZPRQmB8br5HVitBvZar4rf1WSf80CNtE0WtnIFQ";
-
-/// 访问无 JWT 认证 grpc 服务
 #[tokio::test]
 async fn test_do_login() {
-    // let mut client = LoginServiceClient().await.unwrap();
-    // let mut client = get_client_01().await.unwrap();
-    // let mut client = get_client_00().await.unwrap();
-    let mut client = get_client_no_inter(TEST_ADDRESS, TEST_JWT).await.unwrap();
-    // let mut client = get_client(TEST_ADDRESS, TEST_JWT).await.unwrap();
-    // let mut client = get_client_gjw(TEST_ADDRESS, TEST_JWT).await.unwrap();
+
+    dbg!(*GRPC_ADDRESS);
+    let mut client = get_client_no_inter(*GRPC_ADDRESS).await.unwrap();
 
     let request = tonic::Request::new(LoginRequest {
         usercode: "07788".to_string(),
@@ -40,27 +33,37 @@ async fn test_do_login() {
     let reply = resp.into_inner();
     dbg!(&reply);
     assert_eq!(reply.status, 0);
+
+    if let Some(LoginReplyData { jwt: Some(mut jwt_value), .. }) = reply.data {
+        jwt_value = format!("Bearer {}", jwt_value);
+        let mut client01 = CalculatorServiceClient(jwt_value).await.unwrap();
+        let request = tonic::Request::new(Input { number: 8 });
+        let resp = client01.find_square(request).await.unwrap();
+        let reply = resp.into_inner();
+        dbg!(&reply);
+        assert!(reply.result > 0);
+    } else {
+        println!("JWT not found");
+    }
+
 }
 
-async fn get_client_00() -> Result<LoginServiceClient<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
-    get_grpc_client_test!(LoginServiceClient<Channel>, TEST_ADDRESS, TEST_JWT)
-    // get_grpc_client!(LoginServiceClient<Channel>, TEST_ADDRESS, TEST_JWT)
-}
+// type F117 = fn(Request<()>) -> Result<Request<()>, Status>;
 
-type F117 = fn(Request<()>) -> Result<Request<()>, Status>;
-async fn get_client(addr:&'static str, jwt:&str) -> Result<LoginServiceClient<InterceptedService<Channel, F117>>, anyhow::Error> {
-    let client: LoginServiceClient<InterceptedService<Channel, F117>> = LoginServiceClient::with_interceptor(
-        Channel::from_static(addr).connect().await?,
-        |mut req: Request<()>|  -> Result<tonic::Request<()>, Status>{
-            let token: MetadataValue<_> = TEST_JWT.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
-            req.metadata_mut().insert("authorization", token);
-            Ok(req)
-        },
-    );
-    Ok(client)
-}
+// async fn get_client(addr:&'static str, jwt:&str) -> Result<LoginServiceClient<InterceptedService<Channel, F117>>, anyhow::Error> {
+//     let client: LoginServiceClient<InterceptedService<Channel, F117>> = LoginServiceClient::with_interceptor(
+//         Channel::from_static(addr).connect().await?,
+//         |mut req: Request<()>|  -> Result<tonic::Request<()>, Status>{
+//             let token: MetadataValue<_> = jwt.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
+//             req.metadata_mut().insert("authorization", token);
+//             Ok(req)
+//         },
+//     );
+//     Ok(client)
+// }
 
-async fn get_client_no_inter(addr:&'static str, jwt:&str) -> Result<LoginServiceClient<Channel>, anyhow::Error> {
+/// 获取无需 JWT 认证的 grpc 服务客户端
+async fn get_client_no_inter(addr: &'static str) -> Result<LoginServiceClient<Channel>, anyhow::Error> {
     let client: LoginServiceClient<Channel> = LoginServiceClient::new(
         Channel::from_static(addr).connect().await?,
     );
@@ -68,10 +71,8 @@ async fn get_client_no_inter(addr:&'static str, jwt:&str) -> Result<LoginService
 }
 
 
-// You can also use the `Interceptor` trait to create an interceptor type
-// that is easy to name
 struct MyInterceptor {
-    jwt: &'static str,
+    jwt: String,
 }
 
 impl Interceptor for MyInterceptor {
@@ -82,7 +83,7 @@ impl Interceptor for MyInterceptor {
     }
 }
 
-async fn get_client_gjw(addr:&'static str, jwt:&'static str) -> Result<LoginServiceClient<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
+async fn get_client_gjw(addr:&'static str, jwt: String) -> Result<LoginServiceClient<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
     let client: LoginServiceClient<InterceptedService<Channel, MyInterceptor>> = LoginServiceClient::with_interceptor(
         Channel::from_static(addr).connect().await?,
         MyInterceptor{
@@ -94,52 +95,20 @@ async fn get_client_gjw(addr:&'static str, jwt:&'static str) -> Result<LoginServ
 
 /// 宏定义：初始化 grpc 客户端
 #[macro_export]
-macro_rules! get_grpc_client_test {
-    ($ty1:ident<$ty2:ty>, $address:ident, $token:ident) => {
-        Ok(<$ty1<$ty2>>::with_interceptor(
-            <$ty2>::from_static($address).connect().await?,
-            MyInterceptor{
-                jwt: $token,
-            },
-        ));
-    };
-}
-
-
-#[macro_export]
-macro_rules! make_function {
-    // 模式：接受函数名、参数列表和函数体
-    ($client1:ident) => {
-        // 展开为一个函数定义
-        async fn $client1() -> Result<$client1<InterceptedService<Channel, F117>>, anyhow::Error> {
-            Ok(<$client1<Channel>>::with_interceptor(
-                Channel::from_static(TEST_ADDRESS).connect().await?,
-                |mut req: Request<()>| {
-                    let token: MetadataValue<_> = TEST_JWT.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
-                    req.metadata_mut().insert("authorization", token);
-                    Ok(req)
-                },
-            ))
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! make_function_test {
     // 模式：接受函数名、参数列表和函数体
-    ($client1:ident, $address:ident, $token:ident) => {
+    ($client1:ident, $address:ident) => {
         // 展开为一个函数定义
-        async fn $client1() -> Result<$client1<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
+        async fn $client1(jwt: String) -> Result<$client1<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
             Ok(<$client1<Channel>>::with_interceptor(
-                Channel::from_static(&$address).connect().await?,
+                Channel::from_static(*$address).connect().await?,
                 MyInterceptor{
-                    jwt: &$token,
+                    jwt,
                 },
             ))
         }
     };
 }
 
-
-make_function_test!{LoginServiceClient, GRPC_ADDRESS, GRPC_JWT}
-// make_function!{LoginServiceClient}
+make_function_test!(LoginServiceClient, GRPC_ADDRESS);
+make_function_test!(CalculatorServiceClient, GRPC_ADDRESS);
