@@ -16,7 +16,7 @@ impl CalculatorService for Calculator {
 
         let input = request.into_inner();
         let output = Output {
-            result: (input.number * input.number * 2) as i64,
+            result: (input.number * input.number) as i64,
         };
         Ok(tonic::Response::new(output))
     }
