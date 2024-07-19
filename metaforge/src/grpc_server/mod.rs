@@ -1,5 +1,7 @@
 use rand::Rng;
 use tonic::{Request, Status};
+use tonic::metadata::MetadataValue;
+use tonic::service::Interceptor;
 pub use admin_server::*;
 pub use calculator_server::*;
 pub use category_server::*;
@@ -14,19 +16,34 @@ mod login_server;
 mod topic_server;
 mod jwt_server;
 
-/// 宏定义：初始化 grpc 客户端
+/// 用于生成获取 gRPC 服务客户端函数的宏
 #[macro_export]
-macro_rules! get_grpc_client {
-    ($ty1:ident<$ty2:ty>, $address:ident, $token:ident) => {
-        Ok(<$ty1<$ty2>>::with_interceptor(
-            <$ty2>::from_static($address).connect().await?,
-            |mut req: Request<()>| -> Result<tonic::Request<()>, Status> {
-                let token: MetadataValue<_> = $token.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
-                req.metadata_mut().insert("authorization", token);
-                Ok(req)
-            },
-        ));
+macro_rules! generate_function_for_grpc_client {
+    // 模式：接受函数名、参数列表和函数体
+    ($client1:ident, $address:ident) => {
+        // 展开为一个函数定义
+        async fn $client1(jwt: String) -> Result<$client1<InterceptedService<Channel, MyInterceptor>>, anyhow::Error> {
+            Ok(<$client1<Channel>>::with_interceptor(
+                Channel::from_static(*$address).connect().await?,
+                MyInterceptor{
+                    jwt,
+                },
+            ))
+        }
     };
+}
+
+/// 自定义拦截器: 获取 JWT 认证 Token
+pub struct MyInterceptor {
+    pub jwt: String,
+}
+
+impl Interceptor for MyInterceptor {
+    fn call(&mut self, mut request: tonic::Request<()>) -> Result<tonic::Request<()>, Status> {
+        let token: MetadataValue<_> = self.jwt.parse().or_else(|e| Err(Status::internal(format!("invalid token {:?}", e))))?;
+        request.metadata_mut().insert("authorization", token);
+        Ok(request)
+    }
 }
 
 pub fn generate_random_string(length: usize) -> String {
